@@ -92,7 +92,8 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 .qty button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 
 .it{background:linear-gradient(180deg,var(--panel2),color-mix(in srgb,var(--c) 14%,var(--panel2)));border-radius:10px;padding:10px;border-bottom:3px solid var(--c);display:flex;flex-direction:column;gap:2px;min-width:0;position:relative}
-.it svg{height:54px;width:100%;color:var(--c);margin-bottom:4px}
+.it svg{height:54px;width:100%;color:var(--c);fill:currentColor;margin-bottom:4px}
+.fi svg,.banner svg{fill:currentColor}
 .it .w{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .it .n{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .it .pr{font-family:var(--f-mono);font-size:12px;color:var(--accent)}
@@ -303,7 +304,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
       <button data-tab="inv">Инвентарь <span id="invCount"></span></button>
     </nav>
     <div class="bal">
-      <div class="coins">◆ <span id="bal">0</span></div>
+      <div class="coins"><span id="bal">0</span> ₽</div>
       <button class="btn" id="bonus">+ Бонус</button>
       <button class="mute" id="mute" aria-label="Звук"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9z"/><path class="wave" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="x" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 9l6 6M22 9l-6 6"/></svg></button>
     </div>
@@ -316,7 +317,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
     <div class="hero">
       <div class="banner">
         <h1>Открывай кейсы.<br><em>Лови нож.</em></h1>
-        <p>Симулятор открытия кейсов CS2. Демо-монеты, честные шансы на виду, апгрейд скинов и инвентарь.</p>
+        <p>Симулятор открытия кейсов CS2. Демо-баланс в рублях, цены как на рынке, честные шансы на виду, апгрейд скинов и инвентарь.</p>
         <button class="btn" id="heroOpen">Открыть бесплатный кейс</button>
         <svg class="big" viewBox="0 0 120 40"><use href="#ic-knife"/></svg>
       </div>
@@ -396,7 +397,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
     <div class="grid" id="invGrid"></div>
   </section>
 
-  <p class="note">PAPA DROP — демо-симулятор. Монеты ненастоящие, пополнения и вывода нет, предметы нельзя получить в Steam. Названия скинов используются только для иллюстрации.</p>
+  <p class="note">PAPA DROP — демо-симулятор. Баланс ненастоящий, рубли демо, пополнения и вывода нет, предметы нельзя получить в Steam. Названия скинов используются только для иллюстрации.</p>
 </main>
 
 <div class="modal" id="modal" hidden>
@@ -414,47 +415,141 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 
 <svg width="0" height="0" style="position:absolute">
   <defs>
-    <symbol id="ic-rifle" viewBox="0 0 120 40"><path fill="currentColor" d="M4 16h50l4-4h20l2 4h30l6 2v4H94l-6 2v4l-8 8h-9l3-10h-8l-4 6h-6l-1-6H40l-6 4-12 8H8l14-12H4z"/></symbol>
-    <symbol id="ic-pistol" viewBox="0 0 120 40"><path fill="currentColor" d="M30 8h62l4 3v7H62l-3 3h-6l-2 4-6 1-6 12H26l8-18-6-2z"/></symbol>
-    <symbol id="ic-smg" viewBox="0 0 120 40"><path fill="currentColor" d="M14 14h48l4-4h22l2 4h18v6H88l-4 4H70l-2 14h-8l-1-14h-8l-4 8h-8l2-8H30l-10 6H10l6-8-4-2z"/></symbol>
-    <symbol id="ic-awp" viewBox="0 0 120 40"><path fill="currentColor" d="M2 18h40l4-6h28v-4h14v4h4v6h26v4H86l-6 3v3h-8l-4 8h-6l1-8H44l-10 4-14 4H6l14-8H2z"/></symbol>
-    <symbol id="ic-knife" viewBox="0 0 120 40"><path fill="currentColor" d="M8 22c20-10 52-14 74-12l2 6c-12 2-26 6-36 10zM84 12h8l2 4 22 4-2 6-22-2-6 4h-4z"/></symbol>
-    <symbol id="ic-gloves" viewBox="0 0 120 40"><path fill="currentColor" d="M40 34V16l4-12h4l-1 12 4-14h4l-2 14 4-12h4l-2 14 4-10h4l-3 14 6-6 4 2-10 14-6 4zM30 34h46v4H30z"/></symbol>
+    <symbol id="ic-rifle" viewBox="0 0 120 40"><path d="M4 16h50l4-4h20l2 4h30l6 2v4H94l-6 2v4l-8 8h-9l3-10h-8l-4 6h-6l-1-6H40l-6 4-12 8H8l14-12H4z"/></symbol>
+    <symbol id="ic-pistol" viewBox="0 0 120 40"><path d="M30 8h62l4 3v7H62l-3 3h-6l-2 4-6 1-6 12H26l8-18-6-2z"/></symbol>
+    <symbol id="ic-smg" viewBox="0 0 120 40"><path d="M14 14h48l4-4h22l2 4h18v6H88l-4 4H70l-2 14h-8l-1-14h-8l-4 8h-8l2-8H30l-10 6H10l6-8-4-2z"/></symbol>
+    <symbol id="ic-awp" viewBox="0 0 120 40"><path d="M2 18h40l4-6h28v-4h14v4h4v6h26v4H86l-6 3v3h-8l-4 8h-6l1-8H44l-10 4-14 4H6l14-8H2z"/></symbol>
+    <symbol id="ic-knife" viewBox="0 0 120 40"><path d="M8 22c20-10 52-14 74-12l2 6c-12 2-26 6-36 10zM84 12h8l2 4 22 4-2 6-22-2-6 4h-4z"/></symbol>
+    <symbol id="ic-gloves" viewBox="0 0 120 40"><path d="M40 34V16l4-12h4l-1 12 4-14h4l-2 14 4-12h4l-2 14 4-10h4l-3 14 6-6 4 2-10 14-6 4zM30 34h46v4H30z"/></symbol>
+    <symbol id="ic-karambit" viewBox="0 0 120 40"><path fill-rule="evenodd" d="M6 27a8 8 0 1 0 16 0a8 8 0 1 0-16 0zm4 0a4 4 0 1 1 8 0a4 4 0 1 1-8 0zM21 22l30-5 5 7-31 7zM52 16c20-9 46-7 62 8-17-6-36-6-55 6z"/></symbol>
+    <symbol id="ic-butterfly" viewBox="0 0 120 40"><path fill-rule="evenodd" d="M4 22h50v8H4zm6 3v2h4v-2zm10 0v2h4v-2zm10 0v2h4v-2zM6 15h46v5H6zM54 18h46l16 5-16 5H54z"/></symbol>
+    <linearGradient id="lk-fade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffd43b"/><stop offset="0.45" stop-color="#ff5fb3"/><stop offset="1" stop-color="#8a4bff"/></linearGradient>
+    <linearGradient id="lk-doppler" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#170a2b"/><stop offset="0.3" stop-color="#d81b74"/><stop offset="0.65" stop-color="#5b3bd6"/><stop offset="1" stop-color="#0c0c1a"/></linearGradient>
+    <linearGradient id="lk-pearl" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#0b1430"/><stop offset="0.4" stop-color="#3949ab"/><stop offset="0.6" stop-color="#b39ddb"/><stop offset="0.8" stop-color="#1a237e"/><stop offset="1" stop-color="#050814"/></linearGradient>
+    <linearGradient id="lk-gamma" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#073b2c"/><stop offset="0.5" stop-color="#1de9b6"/><stop offset="1" stop-color="#00695c"/></linearGradient>
+    <linearGradient id="lk-marble" x1="0" y1="0" x2="1" y2="0.3"><stop offset="0" stop-color="#e53935"/><stop offset="0.3" stop-color="#fdd835"/><stop offset="0.5" stop-color="#fafafa"/><stop offset="0.75" stop-color="#1e88e5"/><stop offset="1" stop-color="#e53935"/></linearGradient>
+    <linearGradient id="lk-slaughter" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#b71c1c"/><stop offset="0.35" stop-color="#ef9a9a"/><stop offset="0.55" stop-color="#c62828"/><stop offset="0.8" stop-color="#ffcdd2"/><stop offset="1" stop-color="#b71c1c"/></linearGradient>
+    <linearGradient id="lk-night" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#141b2e"/><stop offset="1" stop-color="#3d4d70"/></linearGradient>
+    <linearGradient id="lk-scorched" x1="0" y1="0" x2="1" y2="0.6"><stop offset="0" stop-color="#2b2118"/><stop offset="0.5" stop-color="#4e4236"/><stop offset="1" stop-color="#2b2118"/></linearGradient>
+    <linearGradient id="lk-forest" x1="0" y1="0" x2="1" y2="0.6"><stop offset="0" stop-color="#3e4a2c"/><stop offset="0.5" stop-color="#6b6b4a"/><stop offset="1" stop-color="#2f3a22"/></linearGradient>
+    <linearGradient id="lk-urban" x1="0" y1="0" x2="1" y2="0.6"><stop offset="0" stop-color="#9aa3ad"/><stop offset="0.5" stop-color="#d7dbe0"/><stop offset="1" stop-color="#7d8791"/></linearGradient>
+    <linearGradient id="lk-asiimov" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f2f2f2"/><stop offset="0.55" stop-color="#f2f2f2"/><stop offset="0.56" stop-color="#ff7a00"/><stop offset="0.8" stop-color="#ff7a00"/><stop offset="0.81" stop-color="#181818"/><stop offset="1" stop-color="#181818"/></linearGradient>
+    <linearGradient id="lk-lore" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#e5c56a"/><stop offset="0.5" stop-color="#6b8e3a"/><stop offset="1" stop-color="#d9b75c"/></linearGradient>
+    <linearGradient id="lk-howl" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#ff5722"/><stop offset="0.5" stop-color="#ffb300"/><stop offset="1" stop-color="#b71c1c"/></linearGradient>
+    <linearGradient id="lk-serpent" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#2e7d32"/><stop offset="0.5" stop-color="#cddc39"/><stop offset="1" stop-color="#1b5e20"/></linearGradient>
+    <linearGradient id="lk-lotus" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#00897b"/><stop offset="0.5" stop-color="#f48fb1"/><stop offset="1" stop-color="#004d40"/></linearGradient>
+    <linearGradient id="lk-medusa" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#e9e2c4"/><stop offset="0.5" stop-color="#6f9478"/><stop offset="1" stop-color="#d6cba3"/></linearGradient>
+    <linearGradient id="lk-gungnir" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#0d47a1"/><stop offset="0.5" stop-color="#e3f2fd"/><stop offset="1" stop-color="#1565c0"/></linearGradient>
+    <linearGradient id="lk-prince" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#263238"/><stop offset="0.5" stop-color="#ffd54f"/><stop offset="1" stop-color="#4a148c"/></linearGradient>
+    <linearGradient id="lk-printstream" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fafafa"/><stop offset="0.48" stop-color="#cfd8dc"/><stop offset="0.5" stop-color="#121212"/><stop offset="1" stop-color="#121212"/></linearGradient>
+    <linearGradient id="lk-neonoir" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#1a0033"/><stop offset="0.5" stop-color="#7c4dff"/><stop offset="1" stop-color="#00e5ff"/></linearGradient>
+    <linearGradient id="lk-hyper" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff1744"/><stop offset="0.33" stop-color="#ffea00"/><stop offset="0.66" stop-color="#00e676"/><stop offset="1" stop-color="#2979ff"/></linearGradient>
+    <linearGradient id="lk-vulcan" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f5f5f5"/><stop offset="0.5" stop-color="#1e88e5"/><stop offset="1" stop-color="#111111"/></linearGradient>
+    <linearGradient id="lk-neonrider" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff4081"/><stop offset="0.5" stop-color="#ffea00"/><stop offset="1" stop-color="#7c4dff"/></linearGradient>
+    <linearGradient id="lk-blaze" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#111111"/><stop offset="0.45" stop-color="#ff6d00"/><stop offset="1" stop-color="#ffd600"/></linearGradient>
+    <linearGradient id="lk-codered" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d50000"/><stop offset="0.6" stop-color="#7f0000"/><stop offset="1" stop-color="#111111"/></linearGradient>
+    <linearGradient id="lk-koi" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#ffe082"/><stop offset="0.5" stop-color="#ff8f00"/><stop offset="1" stop-color="#fff8e1"/></linearGradient>
+    <linearGradient id="lk-emperor" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0d47a1"/><stop offset="0.5" stop-color="#ffca28"/><stop offset="1" stop-color="#1a237e"/></linearGradient>
+    <linearGradient id="lk-poseidon" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#e3f2fd"/><stop offset="0.5" stop-color="#1565c0"/><stop offset="1" stop-color="#fafafa"/></linearGradient>
+    <linearGradient id="lk-hotrod" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#b71c1c"/><stop offset="0.5" stop-color="#ff5252"/><stop offset="1" stop-color="#d50000"/></linearGradient>
+    <linearGradient id="lk-jungle" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#1b5e20"/><stop offset="0.5" stop-color="#76ff03"/><stop offset="1" stop-color="#33691e"/></linearGradient>
+    <linearGradient id="lk-arabesque" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#ffd54f"/><stop offset="0.5" stop-color="#8d6e63"/><stop offset="1" stop-color="#ffecb3"/></linearGradient>
+    <linearGradient id="lk-hydra" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="#d4b27a"/><stop offset="0.5" stop-color="#7b5e3b"/><stop offset="1" stop-color="#e8c890"/></linearGradient>
+    <linearGradient id="lk-lightning" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#2a0a5e"/><stop offset="0.5" stop-color="#e040fb"/><stop offset="1" stop-color="#12005e"/></linearGradient>
+    <linearGradient id="lk-pandora" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#111111"/><stop offset="0.4" stop-color="#7b1fa2"/><stop offset="0.7" stop-color="#d50000"/><stop offset="1" stop-color="#111111"/></linearGradient>
+    <linearGradient id="lk-hedge" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#2e7d32"/><stop offset="0.5" stop-color="#aed581"/><stop offset="1" stop-color="#1b5e20"/></linearGradient>
+    <linearGradient id="lk-vice" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff4fa3"/><stop offset="1" stop-color="#29d3ff"/></linearGradient>
+    <linearGradient id="lk-kimono" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#b71c1c"/><stop offset="0.5" stop-color="#1a1a1a"/><stop offset="1" stop-color="#d32f2f"/></linearGradient>
+    <linearGradient id="lk-emerald" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#003d1f"/><stop offset="0.5" stop-color="#00c853"/><stop offset="1" stop-color="#003d1f"/></linearGradient>
+    <linearGradient id="lk-superc" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#cfd8dc"/><stop offset="0.5" stop-color="#263238"/><stop offset="1" stop-color="#90a4ae"/></linearGradient>
+    <linearGradient id="lk-ultraviolent" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#6a1b9a"/><stop offset="0.5" stop-color="#ffeb3b"/><stop offset="1" stop-color="#6a1b9a"/></linearGradient>
+    <linearGradient id="lk-nocts" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#111111"/><stop offset="0.5" stop-color="#aeea00"/><stop offset="1" stop-color="#111111"/></linearGradient>
+    <linearGradient id="lk-omega" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#e0e0e0"/><stop offset="0.5" stop-color="#ff6f00"/><stop offset="1" stop-color="#424242"/></linearGradient>
+    <linearGradient id="lk-amphib" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#00838f"/><stop offset="0.5" stop-color="#cfd8dc"/><stop offset="1" stop-color="#004d56"/></linearGradient>
+    <linearGradient id="lk-frost" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#e1f5fe"/><stop offset="0.5" stop-color="#4fc3f7"/><stop offset="1" stop-color="#eceff1"/></linearGradient>
+    <linearGradient id="lk-bronze" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#8d6e63"/><stop offset="0.5" stop-color="#d7a86e"/><stop offset="1" stop-color="#5d4037"/></linearGradient>
+    <linearGradient id="lk-creme" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#f5ecd7"/><stop offset="0.5" stop-color="#b08d57"/><stop offset="1" stop-color="#f5ecd7"/></linearGradient>
+    <linearGradient id="lk-choco" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#4e342e"/><stop offset="0.5" stop-color="#8d6e63"/><stop offset="1" stop-color="#3e2723"/></linearGradient>
+    <linearGradient id="lk-navy" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#1a237e"/><stop offset="0.5" stop-color="#cfd8dc"/><stop offset="1" stop-color="#0d1442"/></linearGradient>
+    <linearGradient id="lk-shot" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#5d6b3a"/><stop offset="0.5" stop-color="#9e9d24"/><stop offset="1" stop-color="#3e4a2c"/></linearGradient>
+    <linearGradient id="lk-redline" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1a1a1a"/><stop offset="0.44" stop-color="#1a1a1a"/><stop offset="0.45" stop-color="#e01b1b"/><stop offset="0.56" stop-color="#e01b1b"/><stop offset="0.57" stop-color="#1a1a1a"/><stop offset="1" stop-color="#1a1a1a"/></linearGradient>
+    <linearGradient id="lk-bloodsport" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#111111"/><stop offset="0.4" stop-color="#d50000"/><stop offset="0.6" stop-color="#f5f5f5"/><stop offset="1" stop-color="#111111"/></linearGradient>
+    <linearGradient id="lk-mecha" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#eceff1"/><stop offset="0.5" stop-color="#ff3d00"/><stop offset="1" stop-color="#263238"/></linearGradient>
+    <linearGradient id="lk-killconf" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3e2723"/><stop offset="0.5" stop-color="#ffb300"/><stop offset="1" stop-color="#212121"/></linearGradient>
+    <linearGradient id="lk-pinkddpat" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0" stop-color="#f8bbd0"/><stop offset="0.5" stop-color="#ec407a"/><stop offset="1" stop-color="#fce4ec"/></linearGradient>
+    <pattern id="lk-tiger" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(28)"><rect width="9" height="9" fill="#f2a900"/><rect width="3" height="9" fill="#3b2400"/></pattern>
+    <pattern id="lk-mesh" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#b9a36f"/><path d="M0 0L6 6M6 0L0 6" stroke="#5d6b3a" stroke-width="1.2"/></pattern>
     <symbol id="ic-crate" viewBox="0 0 120 90"><path fill="var(--panel2)" stroke="currentColor" stroke-width="3" d="M10 30 60 12l50 18v40L60 86 10 70z"/><path fill="none" stroke="currentColor" stroke-width="3" d="M10 30l50 18 50-18M60 48v38"/><path fill="currentColor" opacity=".35" d="M10 30l50 18v38L10 70z"/><rect x="50" y="52" width="20" height="12" rx="2" fill="currentColor"/></symbol>
   </defs>
 </svg>
 
 <script>
 const RAR={cons:{c:'--r-cons',n:'Ширпотреб'},ind:{c:'--r-ind',n:'Промышленное'},mil:{c:'--r-mil',n:'Армейское'},res:{c:'--r-res',n:'Запрещённое'},cls:{c:'--r-cls',n:'Засекреченное'},cov:{c:'--r-cov',n:'Тайное'},gold:{c:'--r-gold',n:'★ Особое'}};
-const I=(w,n,ic,r,p)=>({w,n,ic,r,p});
+const I=(w,n,ic,r,p,lk)=>({w,n,ic,r,p,lk});
 const CASES=[
  {id:'free',name:'Стартовый',price:0,tag:'Бесплатно раз в минуту',col:'--r-cons',items:[
-   I('P250','Песчаная дюна','pistol','cons',3),I('MP9','Песочная буря','smg','cons',4),I('Nova','Хищник','smg','ind',8),
-   I('Glock-18','Луна','pistol','ind',12),I('UMP-45','Капрал','smg','mil',30),I('USP-S','Тор','pistol','res',90),I('AK-47','Элитное снаряжение','rifle','cls',260)]},
- {id:'street',name:'Улицы',price:79,tag:'Для разогрева',col:'--r-mil',items:[
-   I('MAC-10','Неоновый гонщик','smg','mil',25),I('P90','Азимов','smg','mil',35),I('Desert Eagle','Пламя','pistol','res',70),
-   I('M4A4','Пустота','rifle','mil',40),I('AK-47','Красная линия','rifle','cls',180),I('AWP','Азимов','awp','cov',1400),I('Glock-18','Ветеран','pistol','ind',12),I('FAMAS','Пульс','rifle','ind',15)]},
- {id:'ops',name:'Спецоперация',price:249,tag:'Хит',col:'--r-res',items:[
-   I('M4A1-S','Механо-пушка','rifle','res',140),I('AK-47','Вулкан','rifle','cov',1900),I('USP-S','Убийство подтверждено','pistol','cov',900),
-   I('AWP','Гиперзверь','awp','cls',620),I('Desert Eagle','Код Красный','pistol','cls',380),I('Galil AR','Хром. пушка','rifle','mil',60),I('MP7','Ничего особенного','smg','mil',45),I('SSG 08','Кровь в воде','awp','res',160)]},
- {id:'sniper',name:'Снайпер',price:590,tag:'Только AWP и SSG',col:'--r-cls',items:[
-   I('SSG 08','Тень дракона','awp','res',200),I('AWP','Электрический улей','awp','res',260),I('AWP','Азимов','awp','cov',1400),
-   I('AWP','Неонуар','awp','cls',720),I('AWP','Удар молнии','awp','cov',3200),I('AWP','История о драконе','awp','gold',42000),I('SSG 08','Пучина','awp','mil',90)]},
- {id:'knife',name:'Холодное оружие',price:1490,tag:'Шанс на нож',col:'--r-gold',items:[
-   I('AK-47','Неоновая революция','rifle','cov',1200),I('M4A4','Вой','rifle','cov',6800),I('★ Нож-бабочка','Убийство','knife','gold',38000),
-   I('★ Керамбит','Волны','knife','gold',29000),I('★ Штык-нож','Градиент','knife','gold',21000),I('Desert Eagle','Пламя','pistol','res',70),I('USP-S','Кортекс','pistol','cls',480),I('AWP','Неонуар','awp','cls',720)]},
- {id:'gloves',name:'Перчатки',price:2990,tag:'Хайролл',col:'--r-cov',items:[
-   I('★ Спорт. перчатки','Пандора','gloves','gold',52000),I('★ Перчатки водителя','Королевский','gloves','gold',14000),I('★ Перчатки спец.','Изумруд','gloves','gold',19000),
-   I('AK-47','Огненный змей','rifle','cov',5200),I('M4A1-S','Горячий стержень','rifle','cls',1600),I('AWP','Гиперзверь','awp','cls',620),I('USP-S','Убийство подтверждено','pistol','cov',900)]},
+   I('Glock-18','Дальний свет','pistol','cons',1),I('AK-47','Смешанный серый камуфляж','rifle','cons',3),I('M4A1-S','Помой меня пж','rifle','mil',4),
+   I('Desert Eagle','Внедорожник','pistol','ind',5),I('USP-S','Ночные операции','pistol','mil',12),I('AK-47','Зимняя зелень','rifle','ind',33),
+   I('AWP','Ахерон','awp','ind',51),I('AK-47','Элитное снаряжение','rifle','mil',103),I('USP-S','Извилины','pistol','cls',193),I('Glock-18','Мода','pistol','res',223)]},
+ {id:'cheap',name:'Бомж',price:29,tag:'Дешёвый старт',col:'--r-ind',items:[
+   I('M4A4','Полимерный рожок','rifle','mil',4),I('Desert Eagle','Дейли Дигл','pistol','mil',9),I('M4A1-S','Розовые шестигранники','rifle','mil',9),
+   I('AWP','Разлив мышьяка','awp','mil',22),I('AK-47','Затерянная земля','rifle','mil',31),I('AWP','Капилляры','awp','mil',43),I('AWP','Гадюка','awp','res',63),
+   I('AK-47','Элитное снаряжение','rifle','mil',103),I('AWP','Бог червей','awp','res',144),I('USP-S','Извилины','pistol','cls',193),
+   I('Glock-18','Мода','pistol','res',223),I('Glock-18','Дух воды','pistol','cls',1317)]},
+ {id:'street',name:'Улицы',price:299,tag:'Для разогрева',col:'--r-mil',items:[
+   I('AWP','Бог червей','awp','res',144),I('USP-S','Извилины','pistol','cls',193),I('Glock-18','Мода','pistol','res',223),I('Glock-18','Дух воды','pistol','cls',1317),
+   I('AK-47','Красная линия','rifle','cls',1638,'redline'),I('AWP','Электрический улей','awp','cls',1837),I('USP-S','Предатель','pistol','cov',1900),
+   I('M4A4','Неонуар','rifle','cov',1916,'neonoir'),I('Desert Eagle','Поток информации','pistol','cov',2384,'printstream'),
+   I('AK-47','Неоновый гонщик','rifle','cov',2846,'neonrider'),I('M4A1-S','Золотая спираль','rifle','cov',3335,'koi')]},
+ {id:'ops',name:'Спецоперация',price:1990,tag:'Хит',col:'--r-res',items:[
+   I('AK-47','Красная линия','rifle','cls',1638,'redline'),I('AWP','Скоростной зверь','awp','cov',2049,'hyper'),I('Glock-18','Неонуар','pistol','cov',2181,'neonoir'),
+   I('AWP','Дикое пламя','awp','cov',2626,'blaze'),I('AK-47','Азимов','rifle','cov',2876,'asiimov'),I('Desert Eagle','Код красный','pistol','cov',3249,'codered'),
+   I('M4A4','Император','rifle','cov',3637,'emperor'),I('USP-S','Подтверждённое убийство','pistol','cov',3729,'killconf'),I('Glock-18','Гамма-волны','pistol','cov',4127,'gamma'),
+   I('AK-47','Кровавый спорт','rifle','cov',6261,'bloodsport'),I('M4A1-S','Механо-пушка','rifle','cov',7254,'mecha'),I('AK-47','Вулкан','rifle','cov',7476,'vulcan'),
+   I('M4A1-S','Поток информации','rifle','cov',10199,'printstream'),I('AK-47','Огненный змей','rifle','cov',38843,'serpent')]},
+ {id:'sniper',name:'Снайпер',price:3990,tag:'Только AWP',col:'--r-cls',items:[
+   I('AWP','Пиксельный камуфляж Розовый','awp','cls',1688,'pinkddpat'),I('AWP','Электрический улей','awp','cls',1837),I('AWP','Скоростной зверь','awp','cov',2049,'hyper'),
+   I('AWP','Дикое пламя','awp','cov',2626,'blaze'),I('AWP','Неонуар','awp','cov',2846,'neonoir'),I('AWP','Азимов','awp','cov',5492,'asiimov'),
+   I('AWP','Удар молнии','awp','cov',33457,'lightning'),I('AWP','Пустынная гидра','awp','cov',67534,'hydra'),I('AWP','Принц','awp','cov',126351,'prince'),
+   I('AWP','Медуза','awp','cov',132422,'medusa'),I('AWP','История о драконе','awp','cov',350106,'lore')]},
+ {id:'knife',name:'Ножевой',price:9990,tag:'Нож в каждом кейсе',col:'--r-gold',items:[
+   I('★ Тычковые ножи','Африканская сетка','knife','gold',1995,'mesh'),I('★ Наваха','Сажа','knife','gold',2396,'scorched'),I('★ Кукри','Африканская сетка','knife','gold',2406,'mesh'),
+   I('★ Нож выживания','Северный лес','knife','gold',2626,'forest'),I('★ Паракорд-нож','Городская маскировка','knife','gold',2769,'urban'),I('★ Медвежий нож','Сажа','knife','gold',3098,'scorched'),
+   I('★ Нож с лезвием-крюком','Африканская сетка','knife','gold',3149,'mesh'),I('★ Нож Боуи','Сажа','knife','gold',3185,'scorched'),I('★ Охотничий нож','Северный лес','knife','gold',3713,'forest'),
+   I('★ Фальшион','Сажа','knife','gold',3896,'scorched'),I('★ Нож Бродяга','Африканская сетка','knife','gold',4290,'mesh'),I('★ Классический нож','Сажа','knife','gold',4378,'scorched'),
+   I('★ Штык-нож','Сажа','knife','gold',7074,'scorched'),I('★ Складной нож','Сажа','knife','gold',7999,'scorched'),I('★ Скелетный нож','Африканская сетка','knife','gold',8128,'mesh'),
+   I('★ Стилет','Сажа','knife','gold',8633,'scorched'),I('★ Коготь','Сажа','karambit','gold',14250,'scorched'),I('★ Штык-нож M9','Сажа','knife','gold',20384,'scorched'),
+   I('★ Керамбит','Африканская сетка','karambit','gold',27685,'mesh'),I('★ Нож-бабочка','Ночь','butterfly','gold',33936,'night'),I('★ Керамбит','Зуб тигра','karambit','gold',61171,'tiger'),
+   I('★ Керамбит','Мраморный градиент','karambit','gold',74926,'marble'),I('★ Керамбит','Градиент','karambit','gold',123298,'fade'),
+   I('★ Нож-бабочка','Волны','butterfly','gold',137871,'doppler'),I('★ Нож-бабочка','Градиент','butterfly','gold',155501,'fade')]},
+ {id:'gloves',name:'Перчатки',price:14990,tag:'Перчатки в каждом кейсе',col:'--r-cov',items:[
+   I('★ Перчатки спецназа','Дробь','gloves','gold',2943,'shot'),I('★ Спорт. перчатки','Окисление бронзы','gloves','gold',4596,'bronze'),I('★ Спорт. перчатки','Кремовые завитки','gloves','gold',5031,'creme'),
+   I('★ Перчатки спецназа','Шоколадный «честерфилд»','gloves','gold',5555,'choco'),I('★ Перчатки спецназа','Капитан 3-го ранга','gloves','gold',5773,'navy'),
+   I('★ Перчатки спецназа','Удар тигра','gloves','gold',6994,'tiger'),I('★ Спорт. перчатки','Пламя','gloves','gold',7270,'blaze'),I('★ Спорт. перчатки','Багровый гонщик','gloves','gold',7465,'hotrod'),
+   I('★ Перчатки спецназа','Градиент','gloves','gold',7838,'fade'),I('★ Спорт. перчатки','Мороз','gloves','gold',8768,'frost'),I('★ Спорт. перчатки','Омега','gloves','gold',9481,'omega'),
+   I('★ Спорт. перчатки','Амфибия','gloves','gold',14465,'amphib'),I('★ Спорт. перчатки','Порок','gloves','gold',17976,'vice'),I('★ Перчатки спецназа','Изумрудная сеть','gloves','gold',25587,'emerald'),
+   I('★ Спорт. перчатки','Ноктс','gloves','gold',32420,'nocts'),I('★ Спорт. перчатки','Неоновое насилие','gloves','gold',40235,'ultraviolent'),
+   I('★ Спорт. перчатки','Сверхпроводник','gloves','gold',59772,'superc'),I('★ Перчатки спецназа','Кровавое кимоно','gloves','gold',91359,'kimono'),
+   I('★ Спорт. перчатки','Ящик Пандоры','gloves','gold',150558,'pandora'),I('★ Спорт. перчатки','Живая изгородь','gloves','gold',159226,'hedge')]},
+ {id:'legend',name:'Легенда',price:49990,tag:'Самые дорогие скины',col:'--r-gold',items:[
+   I('M4A1-S','Добро пожаловать в джунгли','rifle','cov',34420,'jungle'),I('AK-47','Огненный змей','rifle','cov',38843,'serpent'),I('Desert Eagle','Пламя','pistol','res',48427,'blaze'),
+   I('AWP','Пустынная гидра','awp','cov',67534,'hydra'),I('AK-47','Золотая арабеска','rifle','cov',70239,'arabesque'),I('M4A4','Посейдон','rifle','cov',78276,'poseidon'),
+   I('★ Перчатки спецназа','Кровавое кимоно','gloves','gold',91359,'kimono'),I('M4A1-S','Хот-род','rifle','cls',95321,'hotrod'),I('Glock-18','Градиент','pistol','res',100042,'fade'),
+   I('AWP','Принц','awp','cov',126351,'prince'),I('AWP','Медуза','awp','cov',132422,'medusa'),I('★ Спорт. перчатки','Ящик Пандоры','gloves','gold',150558,'pandora'),
+   I('★ Нож-бабочка','Градиент','butterfly','gold',155501,'fade'),I('AK-47','Дикий лотос','rifle','cov',301834,'lotus'),I('M4A4','Вой','rifle','cov',337010,'howl'),
+   I('AWP','История о драконе','awp','cov',350106,'lore'),I('AWP','Гунгнир','awp','cov',493246,'gungnir'),I('★ Керамбит','Волны (Чёрная жемчужина)','karambit','gold',595943,'pearl')]},
 ];
-// drop weights: pricier = rarer, tuned per case so the average drop is worth ~115% of the case price
+// drop weights: every skin gets a floor chance (up to 0.4%), the rest goes to cheaper skins
+// so the average drop is worth ~115% of the case price
 const CASE_RTP=1.15;
 CASES.forEach(c=>{
-  const ev=k=>{let sw=0,se=0;for(const x of c.items){const w=Math.pow(x.p,-k);sw+=w;se+=w*x.p}return se/sw};
-  let k=.8;
-  if(c.price){let lo=0,hi=12;const goal=CASE_RTP*c.price;if(ev(0)<=goal)hi=0;else for(let i=0;i<50;i++){const m=(lo+hi)/2;ev(m)>goal?lo=m:hi=m}k=hi}
+  const n=c.items.length,sumP=c.items.reduce((a,x)=>a+x.p,0),goal=c.price?CASE_RTP*c.price:0;
+  const floor=c.price?Math.min(.004,.6*goal/sumP):.004,rest=1-n*floor;
+  const evp=k=>{let sw=0,se=0;for(const x of c.items){const w=Math.pow(x.p,-k);sw+=w;se+=w*x.p}return se/sw};
+  let k=1;
+  if(c.price){const g=(goal-floor*sumP)/rest;let lo=0,hi=14;if(evp(0)<=g)hi=0;else for(let i=0;i<60;i++){const m=(lo+hi)/2;evp(m)>g?lo=m:hi=m}k=hi}
   let sw=0;const ws=c.items.map(x=>{const w=Math.pow(x.p,-k);sw+=w;return w});
-  c.items.forEach((it,i)=>it.chance=ws[i]/sw);
+  c.items.forEach((it,i)=>it.chance=floor+rest*ws[i]/sw);
 });
 
 // Sound (synthesized with Web Audio, soft)
@@ -489,13 +584,14 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $=s=>document.querySelector(s);
 const fmt=n=>Math.round(n).toLocaleString('ru-RU');
-let S={bal:1000,inv:[],opened:0,best:null,ups:0,lastFree:0};
-try{const d=JSON.parse(localStorage.getItem('skinfall')||'null');if(d)S=Object.assign(S,d)}catch(e){}
-const save=()=>{try{localStorage.setItem('skinfall',JSON.stringify(S))}catch(e){}};
+const rub=n=>(n<100?(+n).toLocaleString('ru-RU',{maximumFractionDigits:2}):fmt(n))+' ₽';
+let S={bal:10000,inv:[],opened:0,best:null,ups:0,lastFree:0};
+try{const d=JSON.parse(localStorage.getItem('papadrop_rub')||'null');if(d)S=Object.assign(S,d)}catch(e){}
+const save=()=>{try{localStorage.setItem('papadrop_rub',JSON.stringify(S))}catch(e){}};
 let uid=Date.now();
 
 function itemHTML(it,extra=''){
-  return `<div class="it" style="--c:var(${RAR[it.r].c})" ${extra}><svg viewBox="0 0 120 40"><use href="#ic-${it.ic}"/></svg><div class="w">${it.w}</div><div class="n">${it.n}</div><div class="pr">◆ ${fmt(it.p)}</div></div>`;
+  return `<div class="it" style="--c:var(${RAR[it.r].c})" ${extra}><svg viewBox="0 0 120 40"${it.lk?` style="fill:url(#lk-${it.lk})"`:''}><use href="#ic-${it.ic}"/></svg><div class="w">${it.w}</div><div class="n">${it.n}</div><div class="pr">${rub(it.p)}</div></div>`;
 }
 function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,1800)}
 function render(){
@@ -503,15 +599,15 @@ function render(){
   $('#invCount').textContent=S.inv.length?`(${S.inv.length})`:'';
   $('#sOpened').textContent=fmt(S.opened);
   $('#sUp').textContent=fmt(S.ups);
-  $('#sBest').textContent=S.best?'◆ '+fmt(S.best):'—';
-  $('#bonus').hidden=S.bal>=100;
+  $('#sBest').textContent=S.best?rub(S.best):'—';
+  $('#bonus').hidden=S.bal>=300;
   save();
 }
 
 // Cases grid
 $('#caseGrid').innerHTML=CASES.map(c=>`<button class="case" data-case="${c.id}" style="--c:var(${c.col})">
   <div class="crate" style="color:var(${c.col})"><svg viewBox="0 0 120 90"><use href="#ic-crate"/></svg></div>
-  <div class="tag">${c.tag}</div><div class="t">${c.name}</div><div class="p">${c.price?'◆ '+fmt(c.price):'Бесплатно'}</div></button>`).join('');
+  <div class="tag">${c.tag}</div><div class="t">${c.name}</div><div class="p">${c.price?rub(c.price):'Бесплатно'}</div></button>`).join('');
 document.querySelectorAll('.case').forEach(b=>b.onclick=()=>openCase(b.dataset.case));
 $('#heroOpen').onclick=()=>openCase('free');
 
@@ -532,7 +628,7 @@ function openCase(id){
   cur=CASES.find(c=>c.id===id);
   $('#oCrate').innerHTML=`<svg viewBox="0 0 120 90" style="color:var(${cur.col})"><use href="#ic-crate"/></svg>`;
   $('#oTitle').textContent='Кейс «'+cur.name+'»';
-  $('#oSub').textContent=(cur.price?'◆ '+fmt(cur.price)+' за штуку':'Бесплатно, раз в 60 секунд')+' · '+cur.items.length+' предметов';
+  $('#oSub').textContent=(cur.price?rub(cur.price)+' за штуку':'Бесплатно, раз в 60 секунд')+' · '+cur.items.length+' предметов';
   $('#contents').innerHTML=[...cur.items].sort((a,b)=>b.p-a.p).map(it=>itemHTML(it).replace('</div></div>',`</div><div class="ch">${(it.chance*100).toFixed(it.chance<.01?2:1)}%</div></div>`)).join('');
   setQty(cur.price?qty:1);
   tab('open');
@@ -542,7 +638,7 @@ function setQty(q){
   document.querySelectorAll('#qty button').forEach(b=>{b.setAttribute('aria-pressed',+b.dataset.q===q);b.disabled=!cur.price&&b.dataset.q!=='1'});
   $('#roulettes').innerHTML=Array.from({length:q},()=>`<div class="roul"><div class="marker"></div><div class="drum"><div class="strip"></div></div></div>`).join('');
   document.querySelectorAll('#roulettes .strip').forEach(s=>fillStrip(s,null));
-  $('#spinBtn').textContent=cur.price?`Открыть за ◆ ${fmt(cur.price*q)}`:'Открыть бесплатно';
+  $('#spinBtn').textContent=cur.price?`Открыть за ${rub(cur.price*q)}`:'Открыть бесплатно';
 }
 document.querySelectorAll('#qty button').forEach(b=>b.onclick=()=>!spinning&&setQty(+b.dataset.q));
 function roll(c){let x=Math.random(),a=0;for(const it of c.items){a+=it.chance;if(x<a)return it}return c.items[c.items.length-1]}
@@ -578,7 +674,7 @@ async function animateStrip(strip,w,box,dur,side,snd){
 async function spin(fast){
   if(spinning)return;
   if(!cur.price){const left=60-Math.floor((Date.now()-S.lastFree)/1000);if(left>0)return toast(`Бесплатный кейс через ${left} с`);S.lastFree=Date.now()}
-  else if(S.bal<cur.price*qty)return toast('Не хватает монет. Возьми бонус или продай скины.');
+  else if(S.bal<cur.price*qty)return toast('Не хватает денег. Возьми бонус или продай скины.');
   S.bal-=cur.price*qty;render();
   spinning=true;$('#spinBtn').disabled=$('#fastBtn').disabled=true;
   const wins=Array.from({length:qty},()=>roll(cur));
@@ -597,9 +693,9 @@ async function spin(fast){
   sfx.drop(lastWins.reduce((a,w)=>RANK.indexOf(w.r)>RANK.indexOf(a)?w.r:a,'cons'));
   S.inv.unshift(...lastWins);render();
   const tot=lastWins.reduce((a,b)=>a+b.p,0);
-  $('#mTitle').textContent=lastWins.length>1?`Твой дроп · ◆ ${fmt(tot)}`:'Твой дроп';
+  $('#mTitle').textContent=lastWins.length>1?`Твой дроп · ${rub(tot)}`:'Твой дроп';
   $('#mWins').innerHTML=lastWins.map(w=>itemHTML(w)).join('');
-  $('#mSell').textContent=`Продать за ◆ ${fmt(tot)}`;
+  $('#mSell').textContent=`Продать за ${rub(tot)}`;
   $('#modal').hidden=false;
 }
 $('#spinBtn').onclick=()=>spin(false);
@@ -610,12 +706,12 @@ $('#mAgain').onclick=()=>{$('#modal').hidden=true;spin(false)};
 const closeModal=()=>{$('#modal').hidden=true};
 $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
-$('#bonus').onclick=()=>{S.bal+=500;render();toast('+500 демо-монет')};
+$('#bonus').onclick=()=>{S.bal+=2000;render();toast('+2 000 ₽ на демо-баланс')};
 
 // Inventory
 function renderInv(){
   const tot=S.inv.reduce((a,b)=>a+b.p,0);
-  $('#invSum').textContent=`${S.inv.length} предм. · ◆ ${fmt(tot)}`;
+  $('#invSum').textContent=`${S.inv.length} предм. · ${rub(tot)}`;
   $('#sellAll').disabled=!S.inv.length;
   $('#invGrid').innerHTML=S.inv.length?S.inv.map(it=>itemHTML(it).replace(/<\/div>$/,`<button class="sell" data-sell="${it.id}">Продать</button></div>`)).join(''):'';
   if(!S.inv.length)$('#invGrid').outerHTML;
@@ -626,13 +722,14 @@ function renderInv(){
 $('#sellAll').onclick=()=>{S.bal+=S.inv.reduce((a,b)=>a+b.p,0);S.inv=[];render();renderInv();toast('Всё продано')};
 
 // Upgrade
-const EXTRA=[I('AK-47','Сланец','rifle','mil',55),I('M4A1-S','Ночной кошмар','rifle','cls',320),I('Desert Eagle','Блейз','pistol','cov',2400),
- I('AWP','Дикое пламя','awp','cov',4300),I('M4A4','Король драконов','rifle','cls',260),I('Glock-18','Градиент','pistol','cov',3600),
- I('AK-47','Кровавый спорт','rifle','cov',1100),I('USP-S','Принтстрим','pistol','cov',780),I('AWP','Принтстрим','awp','cov',2100),
- I('★ Нож Боуи','Ночь','knife','gold',9000),I('★ Складной нож','Дамаск','knife','gold',6500),I('★ Нож-коготь','Ультрафиолет','knife','gold',12500),
- I('★ Штык-нож М9','Мраморный градиент','knife','gold',31000),I('★ Перчатки-обмотки','Убийство','gloves','gold',8000),
- I('P2000','Огненный элементаль','pistol','cls',150),I('Five-SeveN','Обезьяний бизнес','pistol','res',95),I('MP9','Звёздный свет','smg','cls',230),
- I('Tec-9','Ледяной кап','pistol','mil',18),I('XM1014','Зинк','smg','res',110),I('Galil AR','Кот-хулиган','rifle','cls',420),I('AK-47','Азимов','rifle','cov',2900)];
+const EXTRA=[I('AK-47','Африканская сетка','rifle','cons',4,'mesh'),I('Glock-18','Океаническая топография','pistol','cons',4),I('M4A4','Мейнфрейм','rifle','mil',2),
+ I('USP-S','27','pistol','mil',13),I('M4A1-S','Нитро','rifle','mil',29),I('Desert Eagle','Мятный веер','pistol','mil',10),
+ I('USP-S','Поток информации','pistol','cov',2197,'printstream'),I('USP-S','Орион','pistol','cls',3384,'gungnir'),I('M4A1-S','Второй игрок','rifle','cov',3464,'neonrider'),
+ I('M4A4','Азимов','rifle','cov',5862,'asiimov'),I('M4A1-S','Скоростной зверь','rifle','cov',7470,'hyper'),I('USP-S','Неонуар','pistol','cov',7536,'neonoir'),
+ I('Desert Eagle','Золотой карп','pistol','cov',13968,'koi'),I('★ Керамбит','Ночь','karambit','gold',34517,'night'),I('★ Нож-бабочка','Африканская сетка','butterfly','gold',30939,'mesh'),
+ I('★ Керамбит','Убийство','karambit','gold',64656,'slaughter'),I('★ Нож-бабочка','Зуб тигра','butterfly','gold',78173,'tiger'),I('★ Нож-бабочка','Убийство','butterfly','gold',84098,'slaughter'),
+ I('★ Керамбит','Волны','karambit','gold',88200,'doppler'),I('★ Нож-бабочка','Мраморный градиент','butterfly','gold',94877,'marble'),I('★ Керамбит','Гамма-волны','karambit','gold',119620,'gamma'),
+ I('★ Перчатки спецназа','Подушкобойки','gloves','gold',19589,'choco'),I('★ Спорт. перчатки','Крупная добыча','gloves','gold',7584,'forest')];
 const CAT=[];{const seen=new Set();[...CASES.flatMap(c=>c.items),...EXTRA].forEach(x=>{const k=x.w+'|'+x.n;if(!seen.has(k)){seen.add(k);CAT.push(x)}});CAT.sort((a,b)=>a.p-b.p)}
 const MULTS=[1.5,2,3,5,10,20],RTP=.95,MAXCH=.9,MINX=1.1;
 let stakeIds=[],tgt=null,mult=2,upBusy=false,needleDeg=0;
@@ -655,10 +752,10 @@ function renderUp(){
   $('#xl').textContent=real?'шанс · x'+real.toFixed(2):'шанс';
   $('#ring').setAttribute('stroke-dasharray',`${ch*276.5} 277`);
   $('#upFrom').innerHTML=!its.length?'Выбери скины для ставки ниже':its.length===1?itemHTML(its[0]):
-    `<div class="stack"><div class="stk-n">Ставка: ${its.length} скин${its.length<5?'а':'ов'}</div><div class="stk-s">◆ ${fmt(s)}</div><div class="stk-l">${its.map(x=>x.w+' | '+x.n+' · ◆ '+fmt(x.p)).join('<br>')}</div></div>`;
+    `<div class="stack"><div class="stk-n">Ставка: ${its.length} скин${its.length<5?'а':'ов'}</div><div class="stk-s">${rub(s)}</div><div class="stk-l">${its.map(x=>x.w+' | '+x.n+' · '+rub(x.p)).join('<br>')}</div></div>`;
   $('#upTo').innerHTML=tgt?itemHTML(tgt):(s?'Выбери скин справа или множитель':'Здесь будет скин, который хочешь получить');
   $('#upBtn').disabled=!(s&&tgt)||upBusy;
-  $('#upBtn').textContent=s&&tgt?`Апгрейд ◆ ${fmt(s)} → ◆ ${fmt(tgt.p)}`:'Апгрейд';
+  $('#upBtn').textContent=s&&tgt?`Апгрейд ${rub(s)} → ${rub(tgt.p)}`:'Апгрейд';
   $('#upInv').innerHTML=S.inv.length?S.inv.map(it=>itemHTML(it,`data-pick="${it.id}" role="button" tabindex="0" aria-pressed="${stakeIds.includes(it.id)}"`).replace('class="it"',`class="it pick${stakeIds.includes(it.id)?' sel':''}"`)).join(''):'<div class="empty" style="grid-column:1/-1">Нет скинов. Открой кейс, чтобы было что апгрейдить.</div>';
   const list=s?CAT.filter(x=>x.p>=s*MINX):CAT;
   $('#upTargets').innerHTML=list.length?list.map((x,i)=>{const lab=s?`x${(x.p/s).toFixed(2)} · ${pctTxt(chanceOf(s,x.p))}`:'';return itemHTML(x,`data-tgt="${CAT.indexOf(x)}" role="button" tabindex="0"`).replace('class="it"',`class="it pick${tgt===x?' sel':''}"`).replace(/<\/div>$/,lab?`<div class="ch">${lab}</div></div>`:'</div>')}).join(''):'<div class="empty" style="grid-column:1/-1">Ставка дороже всех скинов в каталоге.</div>';
@@ -704,9 +801,9 @@ function renderMys(){
   if(!s){$('#mysRange').textContent='—';$('#mysEv').textContent='Выбери скины для ставки ниже'}
   else if(!pool){$('#mysRange').textContent='—';$('#mysEv').textContent='Для такой ставки мало вариантов'}
   else{const lo=pool[pool.length-1].item.p,hi=pool[0].item.p,up=pool.filter(x=>x.item.p>s).reduce((a,b)=>a+b.ch,0);
-    $('#mysRange').textContent=`◆ ${fmt(lo)} – ◆ ${fmt(hi)}`;$('#mysEv').textContent=`x${(lo/s).toFixed(2)} – x${(hi/s).toFixed(2)} · шанс на плюс ${pctTxt(up)}`}
+    $('#mysRange').textContent=`${rub(lo)} – ${rub(hi)}`;$('#mysEv').textContent=`x${(lo/s).toFixed(2)} – x${(hi/s).toFixed(2)} · шанс на плюс ${pctTxt(up)}`}
   $('#mysBtn').disabled=!pool||upBusy;
-  $('#mysBtn').textContent=pool?`Mystery апгрейд · ставка ◆ ${fmt(s)}`:'Mystery апгрейд';
+  $('#mysBtn').textContent=pool?`Mystery апгрейд · ставка ${rub(s)}`:'Mystery апгрейд';
   $('#tgtH').textContent='Возможный дроп';$('#tgtSub').textContent='Скины, которые могут выпасть, и их шансы.';
   $('#upTargets').innerHTML=pool?pool.map(({item,ch})=>itemHTML(item).replace(/<\/div>$/,`<div class="ch">${pctTxt(ch)}</div></div>`)).join(''):`<div class="empty" style="grid-column:1/-1">${s?'Нет скинов в диапазоне x0.3–x5 для этой ставки.':'Выбери ставку, и здесь появятся возможные скины.'}</div>`;
   const key=stakeIds.join(',');
@@ -726,14 +823,14 @@ async function scanReveal(pool,win,s){
   const bait=pricier.length&&Math.random()<.5?pricier[Math.floor(Math.random()*Math.min(2,pricier.length))]:null;
   const dur=REDUCED?500:3800,t0=performance.now();let last=0;
   await new Promise(res=>{(function f(now){const k=Math.min(1,(now-t0)/dur),gap=55+k*k*330;
-    if(now-last>gap){last=now;const it=k>.82&&bait?bait:pickW(pool);stage.innerHTML=itemHTML(it);val.textContent='◆ '+fmt(it.p);sfx.scan(k)}
+    if(now-last>gap){last=now;const it=k>.82&&bait?bait:pickW(pool);stage.innerHTML=itemHTML(it);val.textContent=rub(it.p);sfx.scan(k)}
     txt.textContent='СКАНИРОВАНИЕ '+Math.floor(k*100)+'%';k<1?requestAnimationFrame(f):res()})(t0)});
   stage.innerHTML='<div class="qmark">?</div>';txt.textContent='АНАЛИЗ…';val.textContent='';sfx.hum();
   await wait(REDUCED?120:750);
   const plus=win.p>s;
   sc.className='slot scanner '+(plus?'reveal-win':'reveal-lose');
   stage.innerHTML=itemHTML(win);
-  txt.textContent=(plus?'ПЛЮС x':'МИНУС x')+(win.p/s).toFixed(2);val.textContent='◆ '+fmt(win.p);
+  txt.textContent=(plus?'ПЛЮС x':'МИНУС x')+(win.p/s).toFixed(2);val.textContent=rub(win.p);
   plus?sfx.reveal():sfx.sad();
   await wait(500);
 }
@@ -757,11 +854,11 @@ paintMute();
 const feed=$('#feed');
 function pushFeed(it,mine){
   const d=document.createElement('div');d.className='fi';d.style.setProperty('--c',`var(${RAR[it.r].c})`);
-  d.innerHTML=`<svg viewBox="0 0 120 40"><use href="#ic-${it.ic}"/></svg><div class="w">${mine?'Ты':it.w}</div><div class="n">${mine?it.w+' | ':''}${it.n}</div>`;
+  d.innerHTML=`<svg viewBox="0 0 120 40"${it.lk?` style="fill:url(#lk-${it.lk})"`:''}><use href="#ic-${it.ic}"/></svg><div class="w">${mine?'Ты':it.w}</div><div class="n">${mine?it.w+' | ':''}${it.n}</div>`;
   feed.prepend(d);while(feed.children.length>14)feed.lastChild.remove();
 }
-for(let i=0;i<12;i++){const c=CASES[1+Math.floor(Math.random()*5)];pushFeed(roll(c),false)}
-setInterval(()=>{const c=CASES[1+Math.floor(Math.random()*5)];pushFeed(roll(c),false);$('#sOn').textContent=fmt(2300+Math.random()*250)},2600);
+for(let i=0;i<12;i++){const c=CASES[1+Math.floor(Math.random()*(CASES.length-1))];pushFeed(roll(c),false)}
+setInterval(()=>{const c=CASES[1+Math.floor(Math.random()*(CASES.length-1))];pushFeed(roll(c),false);$('#sOn').textContent=fmt(2300+Math.random()*250)},2600);
 
 render();
 </script>
