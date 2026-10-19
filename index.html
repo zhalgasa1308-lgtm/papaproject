@@ -140,6 +140,15 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 .stk-n{color:var(--muted);font-size:12px}
 .stk-s{font-family:var(--f-mono);font-size:24px;color:var(--accent)}
 .stk-l{font-size:12px;margin-top:6px;max-height:110px;overflow:auto;color:var(--fg)}
+.login{padding:9px 14px;font-size:12px}
+.user{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:4px 6px 4px 4px;min-width:0}
+.user img{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--bg)}
+.user span{font-weight:700;font-size:13px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user .out{background:transparent;color:var(--muted);font-size:12px;padding:4px 6px;border-radius:6px}
+.user .out:hover{color:var(--fg);background:var(--bg)}
+.login-box .sub{margin:0 0 16px}
+.gbtn{display:flex;justify-content:center;min-height:44px;margin-bottom:16px}
+@media (max-width:520px){.user span{display:none}.login{font-size:11px;padding:9px 10px}}
 .mute{background:var(--panel2);border:1px solid var(--line);border-radius:8px;width:40px;height:37px;display:grid;place-items:center;color:var(--fg)}
 .mute svg{width:20px;height:20px}
 .mute .x{display:none} .mute.off{color:var(--muted)} .mute.off .wave{display:none} .mute.off .x{display:inline}
@@ -320,6 +329,8 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
     <div class="bal">
       <div class="coins"><span id="bal">0</span> ₽</div>
       <button class="btn" id="bonus">+ Бонус</button>
+      <button class="btn ghost login" id="loginBtn">Войти через Google</button>
+      <div class="user" id="userBox" hidden><img id="userPic" alt=""><span id="userName"></span><button class="out" id="logoutBtn" aria-label="Выйти">Выйти</button></div>
       <button class="mute" id="mute" aria-label="Звук"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9z"/><path class="wave" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="x" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 9l6 6M22 9l-6 6"/></svg></button>
     </div>
   </div>
@@ -432,6 +443,14 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
     <div class="cel-item" id="celItem"></div>
     <div class="cel-sub" id="celSub"></div>
     <div class="cel-hint">Нажми, чтобы закрыть</div>
+  </div>
+</div>
+<div class="modal" id="loginModal" hidden>
+  <div class="mbox login-box">
+    <h3>Вход в PAPA DROP</h3>
+    <p class="sub" id="loginNote">Войди через Google, чтобы баланс и инвентарь были привязаны к твоему аккаунту.</p>
+    <div id="gBtn" class="gbtn"></div>
+    <div class="mact"><button class="btn ghost" id="loginClose">Закрыть</button></div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -619,9 +638,14 @@ const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $=s=>document.querySelector(s);
 const fmt=n=>Math.round(n).toLocaleString('ru-RU');
 const rub=n=>(n<100?(+n).toLocaleString('ru-RU',{maximumFractionDigits:2}):fmt(n))+' ₽';
-let S={bal:10000,inv:[],opened:0,best:null,ups:0,lastFree:0};
-try{const d=JSON.parse(localStorage.getItem('papadrop_rub')||'null');if(d)S=Object.assign(S,d)}catch(e){}
-const save=()=>{try{localStorage.setItem('papadrop_rub',JSON.stringify(S))}catch(e){}};
+// Google sign-in: paste the OAuth Client ID (Google Cloud → APIs & Services → Credentials) here
+const GOOGLE_CLIENT_ID='';
+const freshState=()=>({bal:10000,inv:[],opened:0,best:null,ups:0,lastFree:0});
+let USER=null;try{USER=JSON.parse(localStorage.getItem('papadrop_user')||'null')}catch(e){}
+const stateKey=()=>'papadrop_rub'+(USER?'_'+USER.sub:'');
+function loadState(){let d=null;try{d=JSON.parse(localStorage.getItem(stateKey())||'null')}catch(e){}return d?Object.assign(freshState(),d):null}
+let S=loadState()||freshState();
+const save=()=>{try{localStorage.setItem(stateKey(),JSON.stringify(S))}catch(e){}};
 let uid=Date.now();
 
 function itemHTML(it,extra=''){
@@ -907,6 +931,32 @@ function celebrate(sub,item){
 function closeCelebrate(){$('#celebrate').hidden=true;cancelAnimationFrame(fwRun)}
 $('#celebrate').onclick=closeCelebrate;
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCelebrate()});
+// Google account
+function decodeJwt(t){const p=t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');const bin=atob(p+'='.repeat((4-p.length%4)%4));return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))))}
+function paintUser(){
+  $('#loginBtn').hidden=!!USER;$('#userBox').hidden=!USER;
+  if(USER){$('#userName').textContent=USER.name;$('#userPic').src=USER.picture||'';$('#userPic').alt=USER.name}
+}
+function switchUser(u){
+  save();
+  const guest=S;USER=u;
+  try{u?localStorage.setItem('papadrop_user',JSON.stringify(u)):localStorage.removeItem('papadrop_user')}catch(e){}
+  S=loadState()||(u?guest:freshState()); // first sign-in keeps current progress
+  stakeIds=[];tgt=null;save();render();renderInv();renderUp();paintUser();
+}
+let gReady=false;
+function loadGoogle(){return new Promise((res,rej)=>{if(window.google&&google.accounts)return res();const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)})}
+$('#loginBtn').onclick=async()=>{
+  $('#loginModal').hidden=false;
+  if(!GOOGLE_CLIENT_ID){$('#loginNote').textContent='Вход через Google пока не настроен: владельцу сайта нужно добавить Client ID.';$('#gBtn').innerHTML='';return}
+  try{await loadGoogle()}catch(e){$('#loginNote').textContent='Не удалось загрузить вход Google. Проверь интернет и попробуй ещё раз.';return}
+  if(!gReady){google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:r=>{try{const p=decodeJwt(r.credential);$('#loginModal').hidden=true;switchUser({sub:p.sub,name:p.name||p.email,picture:p.picture,email:p.email});toast('Вошёл как '+(p.name||p.email))}catch(e){toast('Не получилось войти, попробуй ещё раз')}}});gReady=true}
+  google.accounts.id.renderButton($('#gBtn'),{theme:'filled_black',size:'large',shape:'pill',text:'signin_with',locale:'ru'});
+};
+$('#loginClose').onclick=()=>$('#loginModal').hidden=true;
+$('#loginModal').onclick=e=>{if(e.target.id==='loginModal')$('#loginModal').hidden=true};
+$('#logoutBtn').onclick=()=>{try{window.google&&google.accounts&&google.accounts.id.disableAutoSelect()}catch(e){}switchUser(null);toast('Ты вышел из аккаунта')};
+paintUser();
 // Mute toggle
 function paintMute(){$('#mute').classList.toggle('off',!SND.on);$('#mute').setAttribute('aria-label',SND.on?'Выключить звук':'Включить звук')}
 $('#mute').onclick=()=>{SND.on=!SND.on;try{localStorage.setItem('pd_snd',SND.on?'1':'0')}catch(e){}paintMute();if(SND.on)sfx.click()};
