@@ -404,11 +404,14 @@ const CASES=[
    I('★ Спорт. перчатки','Пандора','gloves','gold',52000),I('★ Перчатки водителя','Королевский','gloves','gold',14000),I('★ Перчатки спец.','Изумруд','gloves','gold',19000),
    I('AK-47','Огненный змей','rifle','cov',5200),I('M4A1-S','Горячий стержень','rifle','cls',1600),I('AWP','Гиперзверь','awp','cls',620),I('USP-S','Убийство подтверждено','pistol','cov',900)]},
 ];
-// drop weights: inverse to price, scaled so expected value ≈ 92% of case price
+// drop weights: pricier = rarer, tuned per case so the average drop is worth ~115% of the case price
+const CASE_RTP=1.15;
 CASES.forEach(c=>{
-  const raw=c.items.map(it=>1/Math.pow(it.p,1.15));
-  const s=raw.reduce((a,b)=>a+b,0);
-  c.items.forEach((it,i)=>it.chance=raw[i]/s);
+  const ev=k=>{let sw=0,se=0;for(const x of c.items){const w=Math.pow(x.p,-k);sw+=w;se+=w*x.p}return se/sw};
+  let k=.8;
+  if(c.price){let lo=0,hi=12;const goal=CASE_RTP*c.price;if(ev(0)<=goal)hi=0;else for(let i=0;i<50;i++){const m=(lo+hi)/2;ev(m)>goal?lo=m:hi=m}k=hi}
+  let sw=0;const ws=c.items.map(x=>{const w=Math.pow(x.p,-k);sw+=w;return w});
+  c.items.forEach((it,i)=>it.chance=ws[i]/sw);
 });
 
 // Sound (synthesized with Web Audio, soft)
@@ -488,7 +491,7 @@ function setQty(q){
   if(!cur.price)q=1; qty=q;
   document.querySelectorAll('#qty button').forEach(b=>{b.setAttribute('aria-pressed',+b.dataset.q===q);b.disabled=!cur.price&&b.dataset.q!=='1'});
   $('#roulettes').innerHTML=Array.from({length:q},()=>`<div class="roul"><div class="marker"></div><div class="drum"><div class="strip"></div></div></div>`).join('');
-  document.querySelectorAll('.strip').forEach(s=>fillStrip(s,null));
+  document.querySelectorAll('#roulettes .strip').forEach(s=>fillStrip(s,null));
   $('#spinBtn').textContent=cur.price?`Открыть за ◆ ${fmt(cur.price*q)}`:'Открыть бесплатно';
 }
 document.querySelectorAll('#qty button').forEach(b=>b.onclick=()=>!spinning&&setQty(+b.dataset.q));
@@ -500,6 +503,28 @@ function fillStrip(strip,winner){
   strip.style.transition='none';strip.style.transform='translateX(0)';
 }
 function tickLoop(strip,w,box,dur,snd){snd=snd||sfx.tick;const t0=performance.now();let last=-1;(function f(){let x=0;try{x=new DOMMatrix(getComputedStyle(strip).transform).m41}catch(e){}const idx=Math.floor((-x+box/2)/w);if(idx!==last){if(last>=0)snd();last=idx}if(performance.now()-t0<dur+150)requestAnimationFrame(f)})()}
+// Near-miss show: the result is already decided; the strip only teases a pricier neighbour before settling on it
+function teasePlan(strip,winner,pool){
+  if(Math.random()>.45)return 0;
+  const better=pool.filter(x=>x.p>winner.p).sort((a,b)=>b.p-a.p);if(!better.length)return 0;
+  const bait=better[Math.floor(Math.random()*Math.min(2,better.length))];
+  const side=Math.random()<.5?-1:1; // -1: stops short on the bait, then creeps on; +1: overshoots onto the bait, then rolls back
+  strip.children[WIN+side].outerHTML=itemHTML(bait);
+  return side;
+}
+async function animateStrip(strip,w,box,dur,side,snd){
+  const half=(w-6)/2,base=WIN*w+half-box/2;
+  let final,first=null;
+  if(side){final=base+side*(half-5-Math.random()*12);first=base+side*(half+10+Math.random()*16)}
+  else final=base+(Math.random()-.5)*w*.8;
+  strip.getBoundingClientRect();
+  const d1=side?dur*.93:dur,hold=side?420+Math.random()*380:0,creep=side?650+Math.random()*400:0;
+  strip.style.transition=`transform ${d1}ms cubic-bezier(.08,.6,.12,1)`;
+  strip.style.transform=`translateX(${-(side?first:final)}px)`;
+  if(snd)tickLoop(strip,w,box,d1+hold+creep,snd);
+  await wait(d1+hold);
+  if(side){strip.style.transition=`transform ${creep}ms cubic-bezier(.45,0,.25,1)`;strip.style.transform=`translateX(${-final}px)`;await wait(creep+80)}
+}
 async function spin(fast){
   if(spinning)return;
   if(!cur.price){const left=60-Math.floor((Date.now()-S.lastFree)/1000);if(left>0)return toast(`Бесплатный кейс через ${left} с`);S.lastFree=Date.now()}
@@ -507,20 +532,12 @@ async function spin(fast){
   S.bal-=cur.price*qty;render();
   spinning=true;$('#spinBtn').disabled=$('#fastBtn').disabled=true;
   const wins=Array.from({length:qty},()=>roll(cur));
-  const strips=[...document.querySelectorAll('.strip')];
+  const strips=[...document.querySelectorAll('#roulettes .strip')];
   const dur=fast?1200:6000;
   sfx.start();
-  strips.forEach((s,i)=>{
-    fillStrip(s,wins[i]);
-    const w=s.children[0].offsetWidth+6;
-    const box=s.parentElement.offsetWidth;
-    const off=WIN*w+w/2-box/2+(Math.random()-.5)*w*.8;
-    s.getBoundingClientRect();
-    s.style.transition=`transform ${dur}ms cubic-bezier(.08,.6,.12,1)`;
-    s.style.transform=`translateX(${-off}px)`;
-    if(i===0)tickLoop(s,w,box,dur);
-  });
-  await new Promise(r=>setTimeout(r,dur+300));
+  const plans=strips.map((s,i)=>{fillStrip(s,wins[i]);return fast||REDUCED?0:teasePlan(s,wins[i],cur.items)});
+  await Promise.all(strips.map((s,i)=>animateStrip(s,s.children[0].offsetWidth+6,s.parentElement.offsetWidth,dur,plans[i],i===0?sfx.tick:null)));
+  await wait(300);
   strips.forEach(s=>s.children[WIN].classList.add('hit'));
   await new Promise(r=>setTimeout(r,550));
   spinning=false;$('#spinBtn').disabled=$('#fastBtn').disabled=false;
@@ -602,12 +619,20 @@ function renderUp(){
 }
 function spinNeedle(finalMod,dur){return new Promise(res=>{const a0=needleDeg,cur=((a0%360)+360)%360,a1=a0+360*5+((finalMod-cur+360)%360),t0=performance.now();let lt=Math.floor(a0/15);
   (function f(now){const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,4);needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;const t=Math.floor(needleDeg/15);if(t!==lt){lt=t;sfx.utick()}k<1?requestAnimationFrame(f):res()})(t0)})}
+function creepNeedle(target,dur){return new Promise(res=>{const a0=needleDeg,cur=((a0%360)+360)%360;let d=target-cur;if(d>180)d-=360;if(d<-180)d+=360;const a1=a0+d,t0=performance.now();sfx.utick();
+  (function f(now){const k=Math.min(1,(now-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;k<1?requestAnimationFrame(f):res()})(t0)})}
 $('#upBtn').onclick=async()=>{
   const s=stakeSum();if(!s||!tgt||upBusy)return;
   const target=tgt,ch=chanceOf(s,target.p),roll=Math.random(),win=roll<ch;
   upBusy=true;$('#upBtn').disabled=true;sfx.ustart();
   const dial=$('.dial');dial.classList.remove('won','lost');
-  await spinNeedle(roll*360,matchMedia('(prefers-reduced-motion: reduce)').matches?400:4000);
+  const B=ch*360;let fin=roll*360,pre=null;
+  if(!REDUCED&&B>16&&B<344&&Math.random()<.45){ // near-miss on the zone border; outcome stays the same
+    const a=2+Math.random()*5,b=4+Math.random()*9;
+    if(Math.random()<.5){fin=win?B-a:B+a;pre=win?B+b:B-b}else{fin=win?a:360-a;pre=win?360-b:b}
+  }
+  await spinNeedle(pre??fin,REDUCED?400:4000);
+  if(pre!==null){await wait(420+Math.random()*380);await creepNeedle(fin,650+Math.random()*350);await wait(150)}
   const ids=new Set(stakeIds);S.inv=S.inv.filter(x=>!ids.has(x.id));S.ups++;
   dial.classList.add(win?'won':'lost');setTimeout(()=>dial.classList.remove('won','lost'),1600);
   if(win){const n={...target,id:++uid};S.inv.unshift(n);S.best=Math.max(S.best||0,n.p);pushFeed(n,true);sfx.win();toast(`Победа! ${target.w} | ${target.n}`);stakeIds=[n.id]}
@@ -648,10 +673,9 @@ $('#mysBtn').onclick=async()=>{
   const win=pickW(pool),st=$('#mysStrip');
   st.style.transition='none';st.style.transform='translateX(0)';
   st.innerHTML=Array.from({length:60},(_,i)=>itemHTML(i===WIN?win:pickW(pool))).join('');
-  const w=st.children[0].offsetWidth+6,box=st.parentElement.offsetWidth,off=WIN*w+w/2-box/2+(Math.random()-.5)*w*.8,dur=REDUCED?600:5500;
-  st.getBoundingClientRect();sfx.ustart();
-  st.style.transition=`transform ${dur}ms cubic-bezier(.08,.6,.12,1)`;st.style.transform=`translateX(${-off}px)`;tickLoop(st,w,box,dur,sfx.utick);
-  await wait(dur+300);st.children[WIN].classList.add('hit');
+  const plan=REDUCED?0:teasePlan(st,win,pool.map(p=>p.item));sfx.ustart();
+  await animateStrip(st,st.children[0].offsetWidth+6,st.parentElement.offsetWidth,REDUCED?600:5500,plan,sfx.utick);
+  await wait(300);st.children[WIN].classList.add('hit');
   const ids=new Set(stakeIds);S.inv=S.inv.filter(x=>!ids.has(x.id));S.ups++;
   const n={...win,id:++uid};S.inv.unshift(n);S.best=Math.max(S.best||0,n.p);pushFeed(n,true);
   const x=(n.p/s).toFixed(2);
