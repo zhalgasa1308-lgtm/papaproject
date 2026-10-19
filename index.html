@@ -144,6 +144,8 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 .user{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:4px 6px 4px 4px;min-width:0}
 .user img{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--bg)}
 .user span{font-weight:700;font-size:13px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user.cloud-ok img{box-shadow:0 0 0 2px var(--good)}
+.user.cloud-err img{box-shadow:0 0 0 2px var(--bad)}
 .user .out{background:transparent;color:var(--muted);font-size:12px;padding:4px 6px;border-radius:6px}
 .user .out:hover{color:var(--fg);background:var(--bg)}
 .login-box .sub{margin:0 0 16px}
@@ -640,12 +642,15 @@ const fmt=n=>Math.round(n).toLocaleString('ru-RU');
 const rub=n=>(n<100?(+n).toLocaleString('ru-RU',{maximumFractionDigits:2}):fmt(n))+' ₽';
 // Google sign-in: paste the OAuth Client ID (Google Cloud → APIs & Services → Credentials) here
 const GOOGLE_CLIENT_ID='286014330060-cus6btiph8l4c1g1c2m5vf3t0j7qtfid.apps.googleusercontent.com';
+// Cloud save: paste the Firebase web config object here (Firebase → Project settings → Your apps)
+const FIREBASE_CONFIG=null;
+let FB=null,cloudTimer=null;
 const freshState=()=>({bal:10000,inv:[],opened:0,best:null,ups:0,lastFree:0});
 let USER=null;try{USER=JSON.parse(localStorage.getItem('papadrop_user')||'null')}catch(e){}
 const stateKey=()=>'papadrop_rub'+(USER?'_'+USER.sub:'');
 function loadState(){let d=null;try{d=JSON.parse(localStorage.getItem(stateKey())||'null')}catch(e){}return d?Object.assign(freshState(),d):null}
 let S=loadState()||freshState();
-const save=()=>{try{localStorage.setItem(stateKey(),JSON.stringify(S))}catch(e){}};
+const save=()=>{S.ts=Date.now();try{localStorage.setItem(stateKey(),JSON.stringify(S))}catch(e){}pushCloud()};
 let uid=Date.now();
 
 function itemHTML(it,extra=''){
@@ -946,17 +951,54 @@ function switchUser(u){
 }
 let gReady=false;
 function loadGoogle(){return new Promise((res,rej)=>{if(window.google&&google.accounts)return res();const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)})}
-$('#loginBtn').onclick=async()=>{
+async function gisLogin(){
   $('#loginModal').hidden=false;
   if(!GOOGLE_CLIENT_ID){$('#loginNote').textContent='Вход через Google пока не настроен: владельцу сайта нужно добавить Client ID.';$('#gBtn').innerHTML='';return}
   try{await loadGoogle()}catch(e){$('#loginNote').textContent='Не удалось загрузить вход Google. Проверь интернет и попробуй ещё раз.';return}
   if(!gReady){google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:r=>{try{const p=decodeJwt(r.credential);$('#loginModal').hidden=true;switchUser({sub:p.sub,name:p.name||p.email,picture:p.picture,email:p.email});toast('Вошёл как '+(p.name||p.email))}catch(e){toast('Не получилось войти, попробуй ещё раз')}}});gReady=true}
   google.accounts.id.renderButton($('#gBtn'),{theme:'filled_black',size:'large',shape:'pill',text:'signin_with',locale:'ru'});
-};
+}
 $('#loginClose').onclick=()=>$('#loginModal').hidden=true;
 $('#loginModal').onclick=e=>{if(e.target.id==='loginModal')$('#loginModal').hidden=true};
-$('#logoutBtn').onclick=()=>{try{window.google&&google.accounts&&google.accounts.id.disableAutoSelect()}catch(e){}switchUser(null);toast('Ты вышел из аккаунта')};
+// Firebase: Google sign-in + progress stored in Firestore (players/{uid})
+function loadScript(src){return new Promise((res,rej)=>{const sc=document.createElement('script');sc.src=src;sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)})}
+function setCloud(st){const b=$('#userBox');b.classList.toggle('cloud-ok',st==='ok');b.classList.toggle('cloud-err',st==='err');b.title=st==='ok'?'Прогресс сохранён в облаке':st==='err'?'Не удалось сохранить в облако':''}
+function pushCloud(){
+  if(!FB||!USER||!FB.auth.currentUser)return;
+  clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(()=>{FB.db.collection('players').doc(FB.auth.currentUser.uid).set({state:JSON.parse(JSON.stringify(S)),name:USER.name,updated:Date.now()}).then(()=>setCloud('ok')).catch(()=>setCloud('err'))},1200);
+}
+async function initFirebase(){
+  if(FB)return FB;
+  const v='https://www.gstatic.com/firebasejs/10.12.2/';
+  await loadScript(v+'firebase-app-compat.js');await loadScript(v+'firebase-auth-compat.js');await loadScript(v+'firebase-firestore-compat.js');
+  firebase.initializeApp(FIREBASE_CONFIG);
+  FB={auth:firebase.auth(),db:firebase.firestore()};
+  FB.auth.onAuthStateChanged(async u=>{
+    if(!u){if(USER)switchUser(null);return}
+    if(!USER||USER.sub!==u.uid)switchUser({sub:u.uid,name:u.displayName||u.email,picture:u.photoURL,email:u.email});
+    try{
+      const doc=await FB.db.collection('players').doc(u.uid).get();
+      const d=doc.exists?doc.data().state:null;
+      if(d&&(d.ts||0)>(S.ts||0)){S=Object.assign(freshState(),d);try{localStorage.setItem(stateKey(),JSON.stringify(S))}catch(e){}stakeIds=[];tgt=null;render();renderInv();renderUp();toast('Прогресс загружен из облака')}
+      else pushCloud();
+      setCloud('ok');
+    }catch(e){setCloud('err')}
+  });
+  return FB;
+}
+$('#loginBtn').onclick=async()=>{
+  if(!FIREBASE_CONFIG)return gisLogin();
+  try{await initFirebase();await FB.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());toast('Вход выполнен')}
+  catch(e){toast(e&&e.code==='auth/popup-closed-by-user'?'Вход отменён':'Не получилось войти, попробуй ещё раз')}
+};
+$('#logoutBtn').onclick=async()=>{
+  if(FB&&FB.auth.currentUser){clearTimeout(cloudTimer);await FB.auth.signOut().catch(()=>{})}
+  else{try{window.google&&google.accounts&&google.accounts.id.disableAutoSelect()}catch(e){}switchUser(null)}
+  toast('Ты вышел из аккаунта')
+};
 paintUser();
+if(FIREBASE_CONFIG)initFirebase().catch(()=>{});
 // Mute toggle
 function paintMute(){$('#mute').classList.toggle('off',!SND.on);$('#mute').setAttribute('aria-label',SND.on?'Выключить звук':'Включить звук')}
 $('#mute').onclick=()=>{SND.on=!SND.on;try{localStorage.setItem('pd_snd',SND.on?'1':'0')}catch(e){}paintMute();if(SND.on)sfx.click()};
