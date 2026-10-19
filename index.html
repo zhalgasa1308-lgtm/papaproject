@@ -639,7 +639,7 @@ const $=s=>document.querySelector(s);
 const fmt=n=>Math.round(n).toLocaleString('ru-RU');
 const rub=n=>(n<100?(+n).toLocaleString('ru-RU',{maximumFractionDigits:2}):fmt(n))+' ₽';
 // Google sign-in: paste the OAuth Client ID (Google Cloud → APIs & Services → Credentials) here
-const GOOGLE_CLIENT_ID='';
+const GOOGLE_CLIENT_ID='286014330060-cus6btiph8l4c1g1c2m5vf3t0j7qtfid.apps.googleusercontent.com';
 const freshState=()=>({bal:10000,inv:[],opened:0,best:null,ups:0,lastFree:0});
 let USER=null;try{USER=JSON.parse(localStorage.getItem('papadrop_user')||'null')}catch(e){}
 const stateKey=()=>'papadrop_rub'+(USER?'_'+USER.sub:'');
