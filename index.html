@@ -18,6 +18,9 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+img{max-width:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;
   background-image:radial-gradient(1200px 500px at 50% -200px,#1d2b44 0%,transparent 70%)}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
@@ -385,6 +388,9 @@ $('#fastBtn').onclick=()=>spin(true);
 $('#mKeep').onclick=()=>{$('#modal').hidden=true;toast('Добавлено в инвентарь')};
 $('#mSell').onclick=()=>{const ids=new Set(lastWins.map(w=>w.id));const before=S.inv.length;S.inv=S.inv.filter(x=>!ids.has(x.id));if(S.inv.length<before)S.bal+=lastWins.reduce((a,b)=>a+b.p,0);$('#modal').hidden=true;render();toast('Продано')};
 $('#mAgain').onclick=()=>{$('#modal').hidden=true;spin(false)};
+const closeModal=()=>{$('#modal').hidden=true};
+$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 $('#bonus').onclick=()=>{S.bal+=500;render();toast('+500 демо-монет')};
 
 // Inventory
