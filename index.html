@@ -231,8 +231,48 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 .modes button[data-mode="mystery"][aria-pressed="true"]{background:linear-gradient(180deg,#b583ff,#7a3cff);color:#fff;box-shadow:0 3px 0 #3d1590,0 0 18px -4px #8847ff}
 .btn.mys{background:linear-gradient(180deg,#b583ff,#7a3cff);color:#fff;box-shadow:0 4px 0 #3d1590,0 10px 22px -8px rgba(136,71,255,.7),inset 0 1px 0 rgba(255,255,255,.5)}
 .btn.mys:active:not(:disabled){box-shadow:0 1px 0 #3d1590}
-.mys-head{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;margin-bottom:22px;perspective:1200px}
-#mysFrom{transform:rotateY(10deg) scale(.96)} #mysTo{transform:rotateY(-10deg) scale(.96)}
+.mys-head{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:18px;align-items:center;margin-bottom:22px;perspective:1200px}
+#mysFrom{transform:rotateY(10deg) scale(.96)}
+.scanner{position:relative;overflow:hidden;min-height:260px;isolation:isolate;
+  background:radial-gradient(80% 80% at 50% 50%,#1c1345,#090d15 78%);border:1px solid #3d2a7a;
+  box-shadow:inset 0 0 60px rgba(136,71,255,.25),0 24px 44px -22px rgba(0,0,0,.95);transition:border-color .4s,box-shadow .4s}
+.scanner::after{content:"";position:absolute;inset:10px;pointer-events:none;z-index:4;opacity:.8;
+  background:linear-gradient(#b583ff,#b583ff) 0 0/20px 2px,linear-gradient(#b583ff,#b583ff) 0 0/2px 20px,
+  linear-gradient(#b583ff,#b583ff) 100% 0/20px 2px,linear-gradient(#b583ff,#b583ff) 100% 0/2px 20px,
+  linear-gradient(#b583ff,#b583ff) 0 100%/20px 2px,linear-gradient(#b583ff,#b583ff) 0 100%/2px 20px,
+  linear-gradient(#b583ff,#b583ff) 100% 100%/20px 2px,linear-gradient(#b583ff,#b583ff) 100% 100%/2px 20px;background-repeat:no-repeat}
+.scan-stage{position:relative;z-index:2;display:grid;place-items:center;width:100%}
+.scanner .it{width:160px;animation:none;transform:none}
+.scan-grid{position:absolute;inset:0;z-index:0;opacity:.3;transition:opacity .3s;
+  background-image:linear-gradient(rgba(160,110,255,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(160,110,255,.14) 1px,transparent 1px);background-size:18px 18px}
+.scan-line{position:absolute;left:0;right:0;top:4%;height:3px;z-index:3;opacity:0;background:#e6d6ff;
+  box-shadow:0 0 12px 3px #8847ff,0 0 44px 12px rgba(136,71,255,.45)}
+.scan-hud{position:absolute;left:14px;right:14px;bottom:12px;z-index:4;display:flex;justify-content:space-between;gap:8px;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:#c9a8ff}
+.scanning .scan-line{opacity:1;animation:scanmove 1s ease-in-out infinite alternate}
+.scanning .scan-grid{opacity:1}
+.scanning .scan-stage{animation:glitch .16s steps(2) infinite}
+.scanning .scan-stage .it{filter:saturate(.35) brightness(1.35) drop-shadow(0 0 10px #8847ff);opacity:.9;
+  background:linear-gradient(180deg,rgba(136,71,255,.25),rgba(136,71,255,.05));border-color:#8847ff}
+@keyframes scanmove{from{top:4%}to{top:94%}}
+@keyframes glitch{50%{transform:translate(2px,-1px) skewX(-3deg)}}
+.burst{position:absolute;inset:-60%;z-index:1;opacity:0;pointer-events:none;
+  background:repeating-conic-gradient(rgba(255,210,120,.4) 0 7deg,transparent 7deg 22deg);
+  -webkit-mask:radial-gradient(circle,#000 0 12%,transparent 48%);mask:radial-gradient(circle,#000 0 12%,transparent 48%)}
+.reveal-win{border-color:#ffb347;box-shadow:inset 0 0 90px rgba(255,170,60,.35),0 0 60px -8px rgba(255,170,60,.8),0 24px 44px -22px rgba(0,0,0,.95)}
+.reveal-win .burst{opacity:1;animation:rays 7s linear infinite,burstin .6s ease-out}
+.reveal-win::before{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;background:radial-gradient(circle,#fff,rgba(255,220,150,.6) 40%,transparent 75%);animation:flashout .7s ease-out forwards}
+.reveal-win .scan-stage .it{animation:pop3d .8s cubic-bezier(.2,1.6,.4,1) both;box-shadow:0 0 0 2px var(--c),0 0 60px -2px var(--c),0 20px 30px -12px rgba(0,0,0,.9)}
+.reveal-win .scan-hud{color:#ffd27a}
+.reveal-lose{border-color:#5a2a35;box-shadow:inset 0 0 80px rgba(255,90,95,.18),0 24px 44px -22px rgba(0,0,0,.95)}
+.reveal-lose .scan-stage .it{animation:sink 1s ease-out both;filter:grayscale(.8) brightness(.75)}
+.reveal-lose .scan-hud{color:var(--bad)}
+.reveal-lose .scan-grid{opacity:.15}
+@keyframes rays{to{transform:rotate(360deg)}}
+@keyframes burstin{from{opacity:0;transform:scale(.2)}}
+@keyframes flashout{from{opacity:1}to{opacity:0}}
+@keyframes pop3d{0%{transform:scale(.15) rotateY(200deg);filter:brightness(5)}60%{filter:brightness(1.7)}100%{transform:scale(1.08) rotateY(0)}}
+@keyframes sink{0%{opacity:0;transform:translateY(-16px)}35%{opacity:1}55%{transform:translateY(5px)}70%{transform:translateX(-5px)}85%{transform:translateX(4px)}100%{transform:none}}
 .mys-range{text-align:center;display:grid;gap:4px}
 .mys-range .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .rng{font-family:var(--f-mono);font-size:26px;background:linear-gradient(180deg,#fff,#c9a8ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 10px rgba(136,71,255,.6))}
@@ -240,7 +280,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 @keyframes qbob{50%{transform:translateY(-8px) rotate(-6deg)}}
 #mysteryBox .marker{background:linear-gradient(180deg,transparent,#e0ccff 14%,#fff 50%,#e0ccff 86%,transparent);box-shadow:0 0 10px 2px rgba(160,110,255,.95),0 0 44px 8px rgba(136,71,255,.4)}
 #mysteryBox .marker::before,#mysteryBox .marker::after{background:linear-gradient(135deg,#f3eaff,#b583ff 40%,#5a22c8 75%,#d9c2ff)}
-@media (max-width:760px){.mys-head{grid-template-columns:1fr} #mysFrom,#mysTo{transform:none}}
+@media (max-width:760px){.mys-head{grid-template-columns:1fr} #mysFrom{transform:none}}
 @media (max-width:760px){
   .hero{grid-template-columns:1fr}
   .up{grid-template-columns:1fr}
@@ -332,10 +372,13 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
     <div id="mysteryBox" hidden>
       <div class="mys-head">
         <div class="slot" id="mysFrom"></div>
+        <div class="slot scanner" id="mysTo">
+          <div class="burst"></div><div class="scan-grid"></div><div class="scan-line"></div>
+          <div class="scan-stage" id="scanStage"><div class="qmark">?</div></div>
+          <div class="scan-hud"><span id="scanTxt">ГОТОВ К СКАНУ</span><span id="scanVal"></span></div>
+        </div>
         <div class="mys-range"><div class="lbl">Может выпасть</div><div class="rng" id="mysRange">—</div><div class="lbl" id="mysEv"></div></div>
-        <div class="slot" id="mysTo"><div class="qmark">?</div></div>
       </div>
-      <div class="roul"><div class="marker"></div><div class="drum"><div class="strip" id="mysStrip"></div></div></div>
       <div class="center" style="margin-bottom:28px"><button class="btn mys" id="mysBtn" disabled>Mystery апгрейд</button></div>
     </div>
     <div class="upcols">
@@ -433,7 +476,14 @@ const sfx={
   drop(r){const k=RANK.indexOf(r),n=[523,587,659,784,880,1047,1175];for(let i=0;i<=Math.min(k+1,6);i++)tone(n[i],.6,'sine',.035,i*.09);
     if(k>=5){for(let i=0;i<6;i++)tone(1400+i*160,.5,'sine',.01,.5+i*.08)}},
   win(){[392,494,587,784].forEach((f,i)=>tone(f,.55,'sine',.04,i*.1));tone(784,.9,'triangle',.02,.4)},
-  lose(){tone(392,.6,'sine',.035,0,-120);tone(262,.8,'sine',.025,.18,-60)}
+  lose(){tone(392,.6,'sine',.035,0,-120);tone(262,.8,'sine',.025,.18,-60)},
+  scan(k){tone(480+k*720,.05,'sine',.018);if(Math.random()<.3)tone(2400,.02,'sine',.006)},
+  hum(){tone(110,.7,'sine',.035,0,30);tone(220,.7,'sine',.012,0,60)},
+  reveal(){tone(180,.35,'sine',.03,0,1100);[523,659,784,1047].forEach(f=>tone(f,1.1,'sine',.028,.25));tone(1568,1,'triangle',.012,.3);for(let i=0;i<7;i++)tone(1700+i*190,.45,'sine',.008,.35+i*.07)},
+  sad(){if(!SND.on)return;const c=ac();if(!c)return;[[392,.38],[370,.38],[349,.38],[330,1.2]].reduce((t,[f,d],i)=>{const o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.setValueAtTime(f,c.currentTime+t);
+    if(i===3){const l=c.createOscillator(),lg=c.createGain();l.frequency.value=5.5;lg.gain.value=7;l.connect(lg);lg.connect(o.frequency);l.start(c.currentTime+t);l.stop(c.currentTime+t+d);o.frequency.linearRampToValueAtTime(300,c.currentTime+t+d)}
+    g.gain.setValueAtTime(0,c.currentTime+t);g.gain.linearRampToValueAtTime(.04,c.currentTime+t+.04);g.gain.setValueAtTime(.04,c.currentTime+t+d*.6);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+t+d);
+    o.connect(g);g.connect(SND.bus);o.start(c.currentTime+t);o.stop(c.currentTime+t+d+.05);return t+d*.92},0.05)}
 };
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -659,27 +709,43 @@ function renderMys(){
   $('#mysBtn').textContent=pool?`Mystery апгрейд · ставка ◆ ${fmt(s)}`:'Mystery апгрейд';
   $('#tgtH').textContent='Возможный дроп';$('#tgtSub').textContent='Скины, которые могут выпасть, и их шансы.';
   $('#upTargets').innerHTML=pool?pool.map(({item,ch})=>itemHTML(item).replace(/<\/div>$/,`<div class="ch">${pctTxt(ch)}</div></div>`)).join(''):`<div class="empty" style="grid-column:1/-1">${s?'Нет скинов в диапазоне x0.3–x5 для этой ставки.':'Выбери ставку, и здесь появятся возможные скины.'}</div>`;
-  const key=stakeIds.join(',');const st=$('#mysStrip');
-  if(!upBusy&&(key!==mysKey||!st.children.length)){mysKey=key;const src=pool||CAT.slice(8,40).map(x=>({item:x,ch:1}));st.style.transition='none';st.style.transform='translateX(0)';st.innerHTML=Array.from({length:60},()=>itemHTML(pickW(src))).join('')}
+  const key=stakeIds.join(',');
+  if(!upBusy&&key!==mysKey){mysKey=key;resetScanner()}
 }
 document.querySelectorAll('.modes button').forEach(b=>b.onclick=()=>{if(upBusy)return;sfx.click();MODE=b.dataset.mode;
   document.querySelectorAll('.modes button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
   $('#classicBox').hidden=MODE!=='classic';$('#mysteryBox').hidden=MODE!=='mystery';
   $('#upSub').textContent=MODE==='classic'?'Поставь один или несколько скинов и выбери, что хочешь получить. Шанс = 95% × ставка ÷ цена цели. Проиграл — ставка сгорает.':'Ставишь скины и получаешь случайный скин стоимостью от x0.3 до x5 от ставки. Например, ставка 10 → выпадет от 3 до 50.';
   renderUp()});
+function resetScanner(){$('#mysTo').className='slot scanner';$('#scanStage').innerHTML='<div class="qmark">?</div>';$('#scanTxt').textContent='ГОТОВ К СКАНУ';$('#scanVal').textContent=''}
+// Scan: flickers through possible skins, pauses, then reveals the (already decided) result
+async function scanReveal(pool,win,s){
+  const sc=$('#mysTo'),stage=$('#scanStage'),txt=$('#scanTxt'),val=$('#scanVal');
+  sc.className='slot scanner scanning';
+  const pricier=pool.map(p=>p.item).filter(x=>x.p>win.p);
+  const bait=pricier.length&&Math.random()<.5?pricier[Math.floor(Math.random()*Math.min(2,pricier.length))]:null;
+  const dur=REDUCED?500:3800,t0=performance.now();let last=0;
+  await new Promise(res=>{(function f(now){const k=Math.min(1,(now-t0)/dur),gap=55+k*k*330;
+    if(now-last>gap){last=now;const it=k>.82&&bait?bait:pickW(pool);stage.innerHTML=itemHTML(it);val.textContent='◆ '+fmt(it.p);sfx.scan(k)}
+    txt.textContent='СКАНИРОВАНИЕ '+Math.floor(k*100)+'%';k<1?requestAnimationFrame(f):res()})(t0)});
+  stage.innerHTML='<div class="qmark">?</div>';txt.textContent='АНАЛИЗ…';val.textContent='';sfx.hum();
+  await wait(REDUCED?120:750);
+  const plus=win.p>s;
+  sc.className='slot scanner '+(plus?'reveal-win':'reveal-lose');
+  stage.innerHTML=itemHTML(win);
+  txt.textContent=(plus?'ПЛЮС x':'МИНУС x')+(win.p/s).toFixed(2);val.textContent='◆ '+fmt(win.p);
+  plus?sfx.reveal():sfx.sad();
+  await wait(500);
+}
 $('#mysBtn').onclick=async()=>{
   const s=stakeSum(),pool=s?mysPool(s):null;if(!pool||upBusy)return;
   upBusy=true;$('#mysBtn').disabled=true;
-  const win=pickW(pool),st=$('#mysStrip');
-  st.style.transition='none';st.style.transform='translateX(0)';
-  st.innerHTML=Array.from({length:60},(_,i)=>itemHTML(i===WIN?win:pickW(pool))).join('');
-  const plan=REDUCED?0:teasePlan(st,win,pool.map(p=>p.item));sfx.ustart();
-  await animateStrip(st,st.children[0].offsetWidth+6,st.parentElement.offsetWidth,REDUCED?600:5500,plan,sfx.utick);
-  await wait(300);st.children[WIN].classList.add('hit');
+  const win=pickW(pool);
+  await scanReveal(pool,win,s);
   const ids=new Set(stakeIds);S.inv=S.inv.filter(x=>!ids.has(x.id));S.ups++;
   const n={...win,id:++uid};S.inv.unshift(n);S.best=Math.max(S.best||0,n.p);pushFeed(n,true);
   const x=(n.p/s).toFixed(2);
-  if(n.p>s){sfx.win();toast(`Плюс! ${n.w} | ${n.n} · x${x}`)}else{sfx.lose();toast(`Выпал ${n.w} | ${n.n} · x${x}`)}
+  toast(n.p>s?`Плюс! ${n.w} | ${n.n} · x${x}`:`Минус: ${n.w} | ${n.n} · x${x}`);
   stakeIds=[n.id];mysKey=stakeIds.join(',');upBusy=false;render();renderUp();
 };
 // Mute toggle
