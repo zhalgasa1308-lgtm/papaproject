@@ -643,7 +643,14 @@ const rub=n=>(n<100?(+n).toLocaleString('ru-RU',{maximumFractionDigits:2}):fmt(n
 // Google sign-in: paste the OAuth Client ID (Google Cloud → APIs & Services → Credentials) here
 const GOOGLE_CLIENT_ID='286014330060-cus6btiph8l4c1g1c2m5vf3t0j7qtfid.apps.googleusercontent.com';
 // Cloud save: paste the Firebase web config object here (Firebase → Project settings → Your apps)
-const FIREBASE_CONFIG=null;
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyBXewQyiTnZZ8PszKsguuejxgy0c9J_Q_0",
+  authDomain:"papadrop-e6a7e.firebaseapp.com",
+  projectId:"papadrop-e6a7e",
+  storageBucket:"papadrop-e6a7e.firebasestorage.app",
+  messagingSenderId:"828126301634",
+  appId:"1:828126301634:web:dc87cfe827faea7287da5b"
+};
 let FB=null,cloudTimer=null;
 const freshState=()=>({bal:10000,inv:[],opened:0,best:null,ups:0,lastFree:0});
 let USER=null;try{USER=JSON.parse(localStorage.getItem('papadrop_user')||'null')}catch(e){}
