@@ -225,6 +225,22 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
   #upFrom,#upTo{transform:none}
   .drum{transform:rotateX(10deg) scale(.97)}
 }
+.modes{display:inline-flex;gap:4px;padding:4px;margin-bottom:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:inset 0 2px 6px rgba(0,0,0,.5)}
+.modes button{background:transparent;padding:8px 18px;border-radius:9px;font-weight:800;color:var(--muted);letter-spacing:.02em}
+.modes button[aria-pressed="true"]{background:linear-gradient(180deg,var(--accent),var(--accent2));color:#1a0f00;box-shadow:0 3px 0 #8a4300}
+.modes button[data-mode="mystery"][aria-pressed="true"]{background:linear-gradient(180deg,#b583ff,#7a3cff);color:#fff;box-shadow:0 3px 0 #3d1590,0 0 18px -4px #8847ff}
+.btn.mys{background:linear-gradient(180deg,#b583ff,#7a3cff);color:#fff;box-shadow:0 4px 0 #3d1590,0 10px 22px -8px rgba(136,71,255,.7),inset 0 1px 0 rgba(255,255,255,.5)}
+.btn.mys:active:not(:disabled){box-shadow:0 1px 0 #3d1590}
+.mys-head{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;margin-bottom:22px;perspective:1200px}
+#mysFrom{transform:rotateY(10deg) scale(.96)} #mysTo{transform:rotateY(-10deg) scale(.96)}
+.mys-range{text-align:center;display:grid;gap:4px}
+.mys-range .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.rng{font-family:var(--f-mono);font-size:26px;background:linear-gradient(180deg,#fff,#c9a8ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 10px rgba(136,71,255,.6))}
+.qmark{font-family:var(--f-display);font-size:96px;line-height:1;color:#c9a8ff;text-shadow:0 0 30px #8847ff,0 6px 0 #3d1590;animation:qbob 2.4s ease-in-out infinite}
+@keyframes qbob{50%{transform:translateY(-8px) rotate(-6deg)}}
+#mysteryBox .marker{background:linear-gradient(180deg,transparent,#e0ccff 14%,#fff 50%,#e0ccff 86%,transparent);box-shadow:0 0 10px 2px rgba(160,110,255,.95),0 0 44px 8px rgba(136,71,255,.4)}
+#mysteryBox .marker::before,#mysteryBox .marker::after{background:linear-gradient(135deg,#f3eaff,#b583ff 40%,#5a22c8 75%,#d9c2ff)}
+@media (max-width:760px){.mys-head{grid-template-columns:1fr} #mysFrom,#mysTo{transform:none}}
 @media (max-width:760px){
   .hero{grid-template-columns:1fr}
   .up{grid-template-columns:1fr}
@@ -297,7 +313,9 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 
   <section id="v-upgrade" hidden>
     <h2>Апгрейд</h2>
-    <p class="sub">Поставь один или несколько скинов и выбери, что хочешь получить. Шанс = 95% × ставка ÷ цена цели. Проиграл — ставка сгорает.</p>
+    <div class="modes" role="group" aria-label="Режим"><button data-mode="classic" aria-pressed="true">Апгрейд</button><button data-mode="mystery" aria-pressed="false">Mystery</button></div>
+    <p class="sub" id="upSub">Поставь один или несколько скинов и выбери, что хочешь получить. Шанс = 95% × ставка ÷ цена цели. Проиграл — ставка сгорает.</p>
+    <div id="classicBox">
     <div class="up">
       <div class="slot" id="upFrom"></div>
       <div class="dial-stage"><div class="dial">
@@ -310,9 +328,19 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
     </div>
     <div class="mults" id="mults"></div>
     <div class="center" style="margin-bottom:28px"><button class="btn" id="upBtn" disabled>Апгрейд</button></div>
+    </div>
+    <div id="mysteryBox" hidden>
+      <div class="mys-head">
+        <div class="slot" id="mysFrom"></div>
+        <div class="mys-range"><div class="lbl">Может выпасть</div><div class="rng" id="mysRange">—</div><div class="lbl" id="mysEv"></div></div>
+        <div class="slot" id="mysTo"><div class="qmark">?</div></div>
+      </div>
+      <div class="roul"><div class="marker"></div><div class="drum"><div class="strip" id="mysStrip"></div></div></div>
+      <div class="center" style="margin-bottom:28px"><button class="btn mys" id="mysBtn" disabled>Mystery апгрейд</button></div>
+    </div>
     <div class="upcols">
       <div><h2>Твоя ставка</h2><p class="sub">Нажми на скины, можно до 6 штук.</p><div class="grid" id="upInv"></div></div>
-      <div><h2>Что получить</h2><p class="sub">На каждом скине множитель и шанс.</p><div class="grid" id="upTargets"></div></div>
+      <div><h2 id="tgtH">Что получить</h2><p class="sub" id="tgtSub">На каждом скине множитель и шанс.</p><div class="grid" id="upTargets"></div></div>
     </div>
   </section>
 
@@ -383,22 +411,29 @@ CASES.forEach(c=>{
   c.items.forEach((it,i)=>it.chance=raw[i]/s);
 });
 
-// Sound (synthesized with Web Audio)
-const SND={on:true,ctx:null};
+// Sound (synthesized with Web Audio, soft)
+const SND={on:true,ctx:null,bus:null};
 try{SND.on=localStorage.getItem('pd_snd')!=='0'}catch(e){}
-function ac(){if(!SND.ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;SND.ctx=new C()}if(SND.ctx.state==='suspended')SND.ctx.resume();return SND.ctx}
-function tone(f,d,type,vol,when,slide){if(!SND.on)return;const c=ac();if(!c)return;const t=c.currentTime+(when||0);const o=c.createOscillator(),g=c.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,f+slide),t+d);g.gain.setValueAtTime(vol||.06,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+.03)}
+function ac(){if(!SND.ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;const c=new C();const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600;const m=c.createGain();m.gain.value=.8;lp.connect(m);m.connect(c.destination);SND.ctx=c;SND.bus=lp}if(SND.ctx.state==='suspended')SND.ctx.resume();return SND.ctx}
+function tone(f,d,type,vol,when,slide){if(!SND.on)return;const c=ac();if(!c)return;const t=c.currentTime+(when||0);const o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,f+slide),t+d);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.03,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(SND.bus);o.start(t);o.stop(t+d+.03)}
 const RANK=['cons','ind','mil','res','cls','cov','gold'];
+let lastTick=0;const limited=fn=>()=>{const n=performance.now();if(n-lastTick<38)return;lastTick=n;fn()};
 const sfx={
-  tick(){tone(1700+Math.random()*200,.025,'square',.035)},
-  click(){tone(520,.06,'triangle',.07)},
-  start(){tone(220,.18,'sawtooth',.05,0,240);tone(330,.18,'triangle',.05,.05,300)},
-  drop(r){const k=RANK.indexOf(r),n=[523,659,784,1047,1319,1568,2093];for(let i=0;i<=Math.min(k+1,6);i++)tone(n[i],.28,'triangle',.08,i*.07);
-    if(k>=4){tone(110,.7,'sawtooth',.05,0,-50)}
-    if(k>=5){for(let i=0;i<8;i++)tone(1800+Math.random()*1600,.14,'sine',.035,.45+i*.06)}},
-  win(){[523,659,784,1047].forEach((f,i)=>tone(f,.28,'square',.06,i*.09));tone(1047,.7,'triangle',.08,.36);tone(1568,.7,'triangle',.05,.36)},
-  lose(){tone(330,.55,'sawtooth',.07,0,-220);tone(165,.7,'square',.05,.12,-90)}
+  // roulette: soft wooden click
+  tick:limited(()=>{tone(880,.045,'sine',.03);tone(1760,.02,'sine',.008)}),
+  // upgrade: low muffled tok
+  utick:limited(()=>{tone(330,.07,'triangle',.032,0,-70)}),
+  click(){tone(620,.05,'sine',.03)},
+  start(){tone(260,.35,'sine',.025,0,180)},
+  ustart(){tone(160,.4,'sine',.03,0,90);tone(240,.4,'sine',.015,.05,120)},
+  drop(r){const k=RANK.indexOf(r),n=[523,587,659,784,880,1047,1175];for(let i=0;i<=Math.min(k+1,6);i++)tone(n[i],.6,'sine',.035,i*.09);
+    if(k>=5){for(let i=0;i<6;i++)tone(1400+i*160,.5,'sine',.01,.5+i*.08)}},
+  win(){[392,494,587,784].forEach((f,i)=>tone(f,.55,'sine',.04,i*.1));tone(784,.9,'triangle',.02,.4)},
+  lose(){tone(392,.6,'sine',.035,0,-120);tone(262,.8,'sine',.025,.18,-60)}
 };
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $=s=>document.querySelector(s);
 const fmt=n=>Math.round(n).toLocaleString('ru-RU');
 let S={bal:1000,inv:[],opened:0,best:null,ups:0,lastFree:0};
@@ -464,7 +499,7 @@ function fillStrip(strip,winner){
   strip.innerHTML=arr.map(it=>itemHTML(it)).join('');
   strip.style.transition='none';strip.style.transform='translateX(0)';
 }
-function tickLoop(strip,w,box,dur){const t0=performance.now();let last=-1;(function f(){let x=0;try{x=new DOMMatrix(getComputedStyle(strip).transform).m41}catch(e){}const idx=Math.floor((-x+box/2)/w);if(idx!==last){if(last>=0)sfx.tick();last=idx}if(performance.now()-t0<dur+150)requestAnimationFrame(f)})()}
+function tickLoop(strip,w,box,dur,snd){snd=snd||sfx.tick;const t0=performance.now();let last=-1;(function f(){let x=0;try{x=new DOMMatrix(getComputedStyle(strip).transform).m41}catch(e){}const idx=Math.floor((-x+box/2)/w);if(idx!==last){if(last>=0)snd();last=idx}if(performance.now()-t0<dur+150)requestAnimationFrame(f)})()}
 async function spin(fast){
   if(spinning)return;
   if(!cur.price){const left=60-Math.floor((Date.now()-S.lastFree)/1000);if(left>0)return toast(`Бесплатный кейс через ${left} с`);S.lastFree=Date.now()}
@@ -542,6 +577,7 @@ function pickByMult(m){const s=stakeSum();if(!s||!m)return null;let best=null,bd
 $('#mults').innerHTML=MULTS.map(m=>`<button data-m="${m}">x${m}</button>`).join('');
 document.querySelectorAll('#mults button').forEach(b=>b.onclick=()=>{if(upBusy)return;sfx.click();mult=+b.dataset.m;if(!stakeSum()){toast('Сначала выбери скины для ставки');return renderUp()}tgt=pickByMult(mult);if(!tgt)toast('Нет скина под такой множитель');renderUp()});
 function renderUp(){
+  $('#tgtH').textContent='Что получить';$('#tgtSub').textContent='На каждом скине множитель и шанс.';
   stakeIds=stakeIds.filter(id=>S.inv.some(x=>x.id===id));
   const its=stakeItems(),s=stakeSum();
   if(tgt&&s&&tgt.p<s*MINX)tgt=null;
@@ -562,13 +598,14 @@ function renderUp(){
   const bind=(sel,fn)=>document.querySelectorAll(sel).forEach(el=>{el.onclick=()=>{if(!upBusy){sfx.click();fn(el);renderUp()}};el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click()}}});
   bind('[data-pick]',el=>{const id=+el.dataset.pick;if(stakeIds.includes(id))stakeIds=stakeIds.filter(x=>x!==id);else if(stakeIds.length>=6)toast('Максимум 6 скинов в ставке');else stakeIds.push(id)});
   bind('[data-tgt]',el=>{tgt=CAT[+el.dataset.tgt];mult=null});
+  if(MODE==='mystery')renderMys();
 }
 function spinNeedle(finalMod,dur){return new Promise(res=>{const a0=needleDeg,cur=((a0%360)+360)%360,a1=a0+360*5+((finalMod-cur+360)%360),t0=performance.now();let lt=Math.floor(a0/15);
-  (function f(now){const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,4);needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;const t=Math.floor(needleDeg/15);if(t!==lt){lt=t;sfx.tick()}k<1?requestAnimationFrame(f):res()})(t0)})}
+  (function f(now){const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,4);needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;const t=Math.floor(needleDeg/15);if(t!==lt){lt=t;sfx.utick()}k<1?requestAnimationFrame(f):res()})(t0)})}
 $('#upBtn').onclick=async()=>{
   const s=stakeSum();if(!s||!tgt||upBusy)return;
   const target=tgt,ch=chanceOf(s,target.p),roll=Math.random(),win=roll<ch;
-  upBusy=true;$('#upBtn').disabled=true;sfx.start();
+  upBusy=true;$('#upBtn').disabled=true;sfx.ustart();
   const dial=$('.dial');dial.classList.remove('won','lost');
   await spinNeedle(roll*360,matchMedia('(prefers-reduced-motion: reduce)').matches?400:4000);
   const ids=new Set(stakeIds);S.inv=S.inv.filter(x=>!ids.has(x.id));S.ups++;
@@ -576,6 +613,50 @@ $('#upBtn').onclick=async()=>{
   if(win){const n={...target,id:++uid};S.inv.unshift(n);S.best=Math.max(S.best||0,n.p);pushFeed(n,true);sfx.win();toast(`Победа! ${target.w} | ${target.n}`);stakeIds=[n.id]}
   else{sfx.lose();toast('Не повезло, ставка сгорела');stakeIds=[]}
   tgt=null;upBusy=false;render();renderUp();
+};
+// Mystery upgrade: stake V → random skin worth x0.3…x5 of V, average return 92%
+let MODE='classic',mysKey='';
+const MYS_LO=.3,MYS_HI=5,MYS_RTP=.92;
+function mysPool(V){const c=CAT.filter(x=>x.p>=V*MYS_LO&&x.p<=V*MYS_HI);if(c.length<3)return null;
+  const ev=k=>{let sw=0,se=0;for(const x of c){const w=Math.pow(x.p,-k);sw+=w;se+=w*x.p}return se/sw};
+  const goal=MYS_RTP*V;let lo=0,hi=12;if(ev(0)<=goal)hi=0;else for(let i=0;i<50;i++){const m=(lo+hi)/2;ev(m)>goal?lo=m:hi=m}
+  let sw=0;const ws=c.map(x=>{const w=Math.pow(x.p,-hi);sw+=w;return w});
+  return c.map((x,i)=>({item:x,ch:ws[i]/sw})).sort((a,b)=>b.item.p-a.item.p)}
+function pickW(pool){let x=Math.random()*pool.reduce((a,b)=>a+b.ch,0);for(const p of pool){x-=p.ch;if(x<0)return p.item}return pool[pool.length-1].item}
+function renderMys(){
+  const s=stakeSum(),pool=s?mysPool(s):null;
+  $('#mysFrom').innerHTML=$('#upFrom').innerHTML;
+  if(!s){$('#mysRange').textContent='—';$('#mysEv').textContent='Выбери скины для ставки ниже'}
+  else if(!pool){$('#mysRange').textContent='—';$('#mysEv').textContent='Для такой ставки мало вариантов'}
+  else{const lo=pool[pool.length-1].item.p,hi=pool[0].item.p,up=pool.filter(x=>x.item.p>s).reduce((a,b)=>a+b.ch,0);
+    $('#mysRange').textContent=`◆ ${fmt(lo)} – ◆ ${fmt(hi)}`;$('#mysEv').textContent=`x${(lo/s).toFixed(2)} – x${(hi/s).toFixed(2)} · шанс на плюс ${pctTxt(up)}`}
+  $('#mysBtn').disabled=!pool||upBusy;
+  $('#mysBtn').textContent=pool?`Mystery апгрейд · ставка ◆ ${fmt(s)}`:'Mystery апгрейд';
+  $('#tgtH').textContent='Возможный дроп';$('#tgtSub').textContent='Скины, которые могут выпасть, и их шансы.';
+  $('#upTargets').innerHTML=pool?pool.map(({item,ch})=>itemHTML(item).replace(/<\/div>$/,`<div class="ch">${pctTxt(ch)}</div></div>`)).join(''):`<div class="empty" style="grid-column:1/-1">${s?'Нет скинов в диапазоне x0.3–x5 для этой ставки.':'Выбери ставку, и здесь появятся возможные скины.'}</div>`;
+  const key=stakeIds.join(',');const st=$('#mysStrip');
+  if(!upBusy&&(key!==mysKey||!st.children.length)){mysKey=key;const src=pool||CAT.slice(8,40).map(x=>({item:x,ch:1}));st.style.transition='none';st.style.transform='translateX(0)';st.innerHTML=Array.from({length:60},()=>itemHTML(pickW(src))).join('')}
+}
+document.querySelectorAll('.modes button').forEach(b=>b.onclick=()=>{if(upBusy)return;sfx.click();MODE=b.dataset.mode;
+  document.querySelectorAll('.modes button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  $('#classicBox').hidden=MODE!=='classic';$('#mysteryBox').hidden=MODE!=='mystery';
+  $('#upSub').textContent=MODE==='classic'?'Поставь один или несколько скинов и выбери, что хочешь получить. Шанс = 95% × ставка ÷ цена цели. Проиграл — ставка сгорает.':'Ставишь скины и получаешь случайный скин стоимостью от x0.3 до x5 от ставки. Например, ставка 10 → выпадет от 3 до 50.';
+  renderUp()});
+$('#mysBtn').onclick=async()=>{
+  const s=stakeSum(),pool=s?mysPool(s):null;if(!pool||upBusy)return;
+  upBusy=true;$('#mysBtn').disabled=true;
+  const win=pickW(pool),st=$('#mysStrip');
+  st.style.transition='none';st.style.transform='translateX(0)';
+  st.innerHTML=Array.from({length:60},(_,i)=>itemHTML(i===WIN?win:pickW(pool))).join('');
+  const w=st.children[0].offsetWidth+6,box=st.parentElement.offsetWidth,off=WIN*w+w/2-box/2+(Math.random()-.5)*w*.8,dur=REDUCED?600:5500;
+  st.getBoundingClientRect();sfx.ustart();
+  st.style.transition=`transform ${dur}ms cubic-bezier(.08,.6,.12,1)`;st.style.transform=`translateX(${-off}px)`;tickLoop(st,w,box,dur,sfx.utick);
+  await wait(dur+300);st.children[WIN].classList.add('hit');
+  const ids=new Set(stakeIds);S.inv=S.inv.filter(x=>!ids.has(x.id));S.ups++;
+  const n={...win,id:++uid};S.inv.unshift(n);S.best=Math.max(S.best||0,n.p);pushFeed(n,true);
+  const x=(n.p/s).toFixed(2);
+  if(n.p>s){sfx.win();toast(`Плюс! ${n.w} | ${n.n} · x${x}`)}else{sfx.lose();toast(`Выпал ${n.w} | ${n.n} · x${x}`)}
+  stakeIds=[n.id];mysKey=stakeIds.join(',');upBusy=false;render();renderUp();
 };
 // Mute toggle
 function paintMute(){$('#mute').classList.toggle('off',!SND.on);$('#mute').setAttribute('aria-label',SND.on?'Выключить звук':'Включить звук')}
