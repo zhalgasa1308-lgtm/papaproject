@@ -941,9 +941,9 @@ const FIREBASE_CONFIG={
   appId:"1:828126301634:web:dc87cfe827faea7287da5b"
 };
 let FB=null,cloudTimer=null;
-const freshState=()=>({bal:10000,inv:[],opened:0,best:null,ups:0,lastFree:0});
+const freshState=()=>({bal:0,inv:[],opened:0,best:null,ups:0,lastFree:0});
 let USER=null;try{USER=JSON.parse(localStorage.getItem('papadrop_user')||'null')}catch(e){}
-const stateKey=()=>'papadrop_rub'+(USER?'_'+USER.sub:'');
+const stateKey=()=>USER?'papadrop_rub_'+USER.sub:'papadrop_guest0';
 function loadState(){let d=null;try{d=JSON.parse(localStorage.getItem(stateKey())||'null')}catch(e){}return d?Object.assign(freshState(),d):null}
 let S=loadState()||freshState();
 // ts marks the last real change; re-renders that change nothing must not bump it
@@ -963,8 +963,11 @@ function render(){
   $('#sOpened').textContent=fmt(S.opened);
   $('#sUp').textContent=fmt(S.ups);
   $('#sBest').textContent=S.best?rub(S.best):'—';
-  $('#bonus').hidden=S.bal>=300;
+  $('#bonus').hidden=true;
   save();
+  // keep open views in sync (e.g. a drop lands while the upgrade tab is open)
+  if(!$('#v-upgrade').hidden&&!upBusy)renderUp();
+  if(!$('#v-inv').hidden)renderInv();
 }
 
 // Cases grid
@@ -1040,7 +1043,7 @@ async function animateStrip(strip,w,box,dur,side,snd){
 async function spin(fast){
   if(spinning)return;
   if(!cur.price){const left=60-Math.floor((Date.now()-S.lastFree)/1000);if(left>0)return toast(`Бесплатный кейс через ${left} с`);S.lastFree=Date.now()}
-  else if(S.bal<cur.price*qty)return toast('Не хватает денег. Возьми бонус или продай скины.');
+  else if(S.bal<cur.price*qty)return toast('Не хватает денег. Открой бесплатный кейс или продай скины.');
   S.bal-=cur.price*qty;render();
   spinning=true;$('#spinBtn').disabled=$('#fastBtn').disabled=true;
   const wins=Array.from({length:qty},()=>roll(cur));
@@ -1306,7 +1309,7 @@ function switchUser(u){
   save();
   const guest=S;USER=u;
   try{u?localStorage.setItem('papadrop_user',JSON.stringify(u)):localStorage.removeItem('papadrop_user')}catch(e){}
-  S=loadState()||(u?guest:freshState()); // first sign-in keeps current progress
+  S=loadState()||freshState(); // a new account starts at 0 ₽; an existing one keeps its balance
   lastFp=fp();writeLocal();
   stakeIds=[];tgt=null;save();render();renderInv();renderUp();paintUser();
 }
@@ -1324,8 +1327,9 @@ $('#loginModal').onclick=e=>{if(e.target.id==='loginModal')$('#loginModal').hidd
 // Firebase: Google sign-in + progress stored in Firestore (players/{uid})
 function loadScript(src){return new Promise((res,rej)=>{const sc=document.createElement('script');sc.src=src;sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)})}
 function setCloud(st){const b=$('#userBox');b.classList.toggle('cloud-ok',st==='ok');b.classList.toggle('cloud-err',st==='err');b.title=st==='ok'?'Прогресс сохранён в облаке':st==='err'?'Не удалось сохранить в облако':''}
+let cloudReady=false;
 function pushCloud(){
-  if(!FB||!USER||!FB.auth.currentUser)return;
+  if(!FB||!USER||!FB.auth.currentUser||!cloudReady)return;
   clearTimeout(cloudTimer);
   cloudTimer=setTimeout(()=>{FB.db.collection('players').doc(FB.auth.currentUser.uid).set({state:JSON.parse(JSON.stringify(S)),name:USER.name,email:USER.email||'',updated:Date.now()}).then(()=>setCloud('ok')).catch(()=>setCloud('err'))},1200);
 }
@@ -1340,14 +1344,16 @@ async function initFirebase(){
   FB.auth.onAuthStateChanged(u=>{
     if(unsub){unsub();unsub=null}
     if(!u){if(USER)switchUser(null);return}
+    let hadLocal=false;try{hadLocal=!!localStorage.getItem('papadrop_rub_'+u.uid)}catch(e){}
     if(!USER||USER.sub!==u.uid)switchUser({sub:u.uid,name:u.displayName||u.email,picture:u.photoURL,email:u.email});
     else{USER.email=u.email;paintUser()}
-    let first=true;
+    let first=true;cloudReady=false;
     // live: picks up admin changes even while the page is open
     unsub=FB.db.collection('players').doc(u.uid).onSnapshot(doc=>{
       if(doc.metadata.hasPendingWrites)return;
       const d=doc.exists?doc.data().state:null;
-      if(d&&(d.ts||0)>(S.ts||0)){const had=S.bal;applyCloud(d);toast(first?'Прогресс загружен из облака':(d.bal!==had?'Баланс обновлён: '+rub(d.bal):'Прогресс обновлён'))}
+      cloudReady=true;
+      if(d&&((first&&!hadLocal)||(d.ts||0)>(S.ts||0))){const had=S.bal;applyCloud(d);toast(first?'Прогресс загружен из облака':(d.bal!==had?'Баланс обновлён: '+rub(d.bal):'Прогресс обновлён'))}
       else if(first)pushCloud();
       first=false;setCloud('ok');
     },()=>setCloud('err'));
