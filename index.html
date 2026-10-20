@@ -174,6 +174,15 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 
 
 
+/* ===== roulette stage: crate first, roulette appears after it vanishes ===== */
+.rstage{position:relative;min-height:190px}
+.rstage #roulettes{transition:opacity .35s ease,transform .45s cubic-bezier(.2,1.2,.4,1)}
+.rstage.idle #roulettes{opacity:0;transform:scale(.94);pointer-events:none}
+.crate-stage{position:absolute;inset:0;z-index:5;display:grid;place-items:center;pointer-events:none;transition:opacity .3s}
+.rstage:not(.idle) .crate-stage{opacity:0}
+.crate-stage .c3d{--s:110px}
+.c3d.poof{animation:c3dPoof .4s ease-in forwards}
+@keyframes c3dPoof{0%{transform:scale(1);opacity:1;filter:brightness(1)}40%{transform:scale(1.15);filter:brightness(2.4)}100%{transform:scale(1.6);opacity:0;filter:brightness(4) blur(6px)}}
 /* ===== 3D crate ===== */
 .c3d{--s:78px;--h:calc(var(--s)*.72);position:relative;width:calc(var(--s)*1.7);height:calc(var(--s)*1.65);perspective:620px;display:grid;place-items:center}
 .c3d.big{--s:96px}
@@ -422,7 +431,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
       <div class="crate" id="oCrate"></div>
       <div><h2 id="oTitle"></h2><div class="sub" id="oSub" style="margin:0"></div></div>
     </div>
-    <div id="roulettes"></div>
+    <div class="rstage idle" id="rstage"><div id="roulettes"></div><div class="crate-stage" id="crateStage"></div></div>
     <div class="controls">
       <div class="qty" id="qty" role="group" aria-label="Количество">
         <button aria-pressed="true" data-q="1">1</button><button data-q="2">2</button><button data-q="3">3</button>
@@ -765,19 +774,22 @@ let cur=null,qty=1,spinning=false,lastWins=[];
 function openCase(id){
   sfx.click();
   cur=CASES.find(c=>c.id===id);
-  $('#oCrate').innerHTML=crate3d(cur.col,true);
+  $('#oCrate').innerHTML=crate3d(cur.col);
+  $('#crateStage').innerHTML=crate3d(cur.col,true);
   $('#oTitle').textContent='Кейс «'+cur.name+'»';
   $('#oSub').textContent=(cur.price?rub(cur.price)+' за штуку':'Бесплатно, раз в 60 секунд')+' · '+cur.items.length+' предметов';
   $('#contents').innerHTML=[...cur.items].sort((a,b)=>b.p-a.p).map(it=>itemHTML(it).replace('</div></div>',`</div><div class="ch">${(it.chance*100).toFixed(it.chance<.01?2:1)}%</div></div>`)).join('');
   setQty(cur.price?qty:1);
   tab('open');
 }
+function resetStage(){const st=$('#rstage');if(!st)return;st.classList.add('idle');const cr=$('#crateStage .c3d');if(cr)cr.classList.remove('jump','open','poof')}
 function setQty(q){
   if(!cur.price)q=1; qty=q;
   document.querySelectorAll('#qty button').forEach(b=>{b.setAttribute('aria-pressed',+b.dataset.q===q);b.disabled=!cur.price&&b.dataset.q!=='1'});
   $('#roulettes').innerHTML=Array.from({length:q},()=>`<div class="roul"><div class="marker"></div><div class="drum"><div class="strip"></div></div></div>`).join('');
   document.querySelectorAll('#roulettes .strip').forEach(s=>fillStrip(s,null));
   $('#spinBtn').textContent=cur.price?`Открыть за ${rub(cur.price*q)}`:'Открыть бесплатно';
+  resetStage();
 }
 document.querySelectorAll('#qty button').forEach(b=>b.onclick=()=>!spinning&&setQty(+b.dataset.q));
 function roll(c){let x=Math.random(),a=0;for(const it of c.items){a+=it.chance;if(x<a)return it}return c.items[c.items.length-1]}
@@ -820,9 +832,14 @@ async function spin(fast){
   const strips=[...document.querySelectorAll('#roulettes .strip')];
   const dur=fast?1200:6000;
   sfx.start();
-  const cr=$('#oCrate .c3d');
-  if(cr&&!REDUCED){cr.classList.remove('jump','open');cr.offsetWidth;cr.classList.add('jump');
-    if(!fast){await wait(600);cr.classList.add('open');tone(620,.25,'sine',.03,0,500);await wait(250)}else{setTimeout(()=>cr.classList.add('open'),500)}}
+  // crate jumps, opens and vanishes, then the roulette fades in behind it
+  resetStage();
+  const cr=$('#crateStage .c3d');
+  if(cr&&!REDUCED){cr.offsetWidth;cr.classList.add('jump');
+    await wait(fast?380:620);cr.classList.add('open');tone(620,.25,'sine',.03,0,500);
+    await wait(fast?140:320);cr.classList.add('poof');tone(900,.35,'sine',.025,0,900);await wait(fast?120:220)}
+  $('#rstage').classList.remove('idle');
+  await wait(REDUCED?0:(fast?120:280));
   const plans=strips.map((s,i)=>{fillStrip(s,wins[i]);return fast||REDUCED?0:teasePlan(s,wins[i],cur.items)});
   await Promise.all(strips.map((s,i)=>animateStrip(s,s.children[0].offsetWidth+6,s.parentElement.offsetWidth,dur,plans[i],i===0?sfx.tick:null)));
   await wait(300);
