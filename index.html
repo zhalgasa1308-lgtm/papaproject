@@ -460,7 +460,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
       <div class="slot" id="upTo"></div>
     </div>
     <div class="mults" id="mults"></div>
-    <div class="center" style="margin-bottom:28px"><button class="btn" id="upBtn" disabled>Апгрейд</button></div>
+    <div class="center" style="margin-bottom:28px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn" id="upBtn" disabled>Апгрейд</button><button class="btn ghost" id="upFast" disabled>Быстро</button></div>
     </div>
     <div id="mysteryBox" hidden>
       <div class="mys-head">
@@ -618,13 +618,15 @@ const CASES=[
    I('USP-S','27 (FN)','pistol','mil',288),I('Desert Eagle','Внедорожник (FN)','pistol','ind',411),I('AK-47','Элитное снаряжение (FN)','rifle','mil',461),I('AWP','Ахерон (FN)','awp','ind',569),I('Glock-18','Мода (FN)','pistol','res',727),I('Glock-18','Дух воды','pistol','cls',1317),
    I('AK-47','Красная линия','rifle','cls',1638,'redline'),I('AWP','Электрический улей','awp','cls',1837),I('USP-S','Предатель','pistol','cov',1900),
    I('M4A4','Неонуар','rifle','cov',1916,'neonoir'),I('Desert Eagle','Поток информации','pistol','cov',2384,'printstream'),
-   I('AK-47','Неоновый гонщик','rifle','cov',2846,'neonrider'),I('M4A1-S','Золотая спираль','rifle','cov',3335,'koi')]},
+   I('AK-47','Неоновый гонщик','rifle','cov',2846,'neonrider'),I('M4A1-S','Золотая спираль','rifle','cov',3335,'koi'),
+   I('USP-S','Едва зелёный','pistol','res',467,'jungle'),I('M4A1-S','Нитро (FN)','rifle','mil',738,'omega'),I('USP-S','Извилины (FN)','pistol','cls',1826),I('Desert Eagle','Поток информации (FN)','pistol','cov',5365,'printstream')]},
  {id:'ops',name:'Спецоперация',price:1990,tag:'Хит',col:'--r-res',items:[
    I('AK-47','Красная линия','rifle','cls',1638,'redline'),I('AWP','Скоростной зверь','awp','cov',2049,'hyper'),I('Glock-18','Неонуар','pistol','cov',2181,'neonoir'),
    I('AWP','Дикое пламя','awp','cov',2626,'blaze'),I('AK-47','Азимов','rifle','cov',2876,'asiimov'),I('Desert Eagle','Код красный','pistol','cov',3249,'codered'),
    I('M4A4','Император','rifle','cov',3637,'emperor'),I('USP-S','Подтверждённое убийство','pistol','cov',3729,'killconf'),I('Glock-18','Гамма-волны','pistol','cov',4127,'gamma'),
    I('AK-47','Кровавый спорт','rifle','cov',6261,'bloodsport'),I('M4A1-S','Механо-пушка','rifle','cov',7254,'mecha'),I('AK-47','Вулкан','rifle','cov',7476,'vulcan'),
-   I('M4A1-S','Поток информации','rifle','cov',10199,'printstream'),I('AK-47','Огненный змей','rifle','cov',38843,'serpent')]},
+   I('M4A1-S','Поток информации','rifle','cov',10199,'printstream'),I('AK-47','Огненный змей','rifle','cov',38843,'serpent'),
+   I('AK-47','Красная линия (MW)','rifle','cls',9413,'redline'),I('AWP','Скоростной зверь (FN)','awp','cov',10561,'hyper'),I('M4A4','Император (FN)','rifle','cov',15404,'emperor'),I('USP-S','Подтверждённое убийство (FN)','pistol','cov',16724,'killconf')]},
  {id:'sniper',name:'Снайпер',price:3990,tag:'Только AWP',col:'--r-cls',items:[
    I('AWP','Пиксельный камуфляж Розовый','awp','cls',1688,'pinkddpat'),I('AWP','Электрический улей','awp','cls',1837),I('AWP','Скоростной зверь','awp','cov',2049,'hyper'),
    I('AWP','Дикое пламя','awp','cov',2626,'blaze'),I('AWP','Неонуар','awp','cov',2846,'neonoir'),I('AWP','Азимов','awp','cov',5492,'asiimov'),
@@ -639,7 +641,8 @@ const CASES=[
    I('★ Стилет','Сажа','knife','gold',8633,'scorched'),I('★ Коготь','Сажа','karambit','gold',14250,'scorched'),I('★ Штык-нож M9','Сажа','knife','gold',20384,'scorched'),
    I('★ Керамбит','Африканская сетка','karambit','gold',27685,'mesh'),I('★ Нож-бабочка','Ночь','butterfly','gold',33936,'night'),I('★ Керамбит','Зуб тигра','karambit','gold',61171,'tiger'),
    I('★ Керамбит','Мраморный градиент','karambit','gold',74926,'marble'),I('★ Керамбит','Градиент','karambit','gold',123298,'fade'),
-   I('★ Нож-бабочка','Волны','butterfly','gold',137871,'doppler'),I('★ Нож-бабочка','Градиент','butterfly','gold',155501,'fade')]},
+   I('★ Нож-бабочка','Волны','butterfly','gold',137871,'doppler'),I('★ Нож-бабочка','Градиент','butterfly','gold',155501,'fade'),
+   I('★ Керамбит','Ультрафиолет','karambit','gold',33347,'lightning'),I('★ Нож-бабочка','Легенды','butterfly','gold',36564,'lore'),I('★ Керамбит','Кровавая паутина','karambit','gold',41391,'codered'),I('★ Нож-бабочка','Автотроника','butterfly','gold',48832,'codered')]},
  {id:'gloves',name:'Перчатки',price:14990,tag:'Перчатки в каждом кейсе',col:'--r-cov',items:[
    I('★ Перчатки спецназа','Дробь','gloves','gold',2943,'shot'),I('★ Спорт. перчатки','Окисление бронзы','gloves','gold',4596,'bronze'),I('★ Спорт. перчатки','Кремовые завитки','gloves','gold',5031,'creme'),
    I('★ Перчатки спецназа','Шоколадный «честерфилд»','gloves','gold',5555,'choco'),I('★ Перчатки спецназа','Капитан 3-го ранга','gloves','gold',5773,'navy'),
@@ -648,7 +651,8 @@ const CASES=[
    I('★ Спорт. перчатки','Амфибия','gloves','gold',14465,'amphib'),I('★ Спорт. перчатки','Порок','gloves','gold',17976,'vice'),I('★ Перчатки спецназа','Изумрудная сеть','gloves','gold',25587,'emerald'),
    I('★ Спорт. перчатки','Ноктс','gloves','gold',32420,'nocts'),I('★ Спорт. перчатки','Неоновое насилие','gloves','gold',40235,'ultraviolent'),
    I('★ Спорт. перчатки','Сверхпроводник','gloves','gold',59772,'superc'),I('★ Перчатки спецназа','Кровавое кимоно','gloves','gold',91359,'kimono'),
-   I('★ Спорт. перчатки','Ящик Пандоры','gloves','gold',150558,'pandora'),I('★ Спорт. перчатки','Живая изгородь','gloves','gold',159226,'hedge')]},
+   I('★ Спорт. перчатки','Ящик Пандоры','gloves','gold',150558,'pandora'),I('★ Спорт. перчатки','Живая изгородь','gloves','gold',159226,'hedge'),
+   I('★ Перчатки спецназа','Полевой агент','gloves','gold',6436,'forest'),I('★ Перчатки спецназа','Мраморный градиент','gloves','gold',7939,'marble'),I('★ Спорт. перчатки','Мясник','gloves','gold',12543,'codered'),I('★ Перчатки спецназа','Погоня за облаком','gloves','gold',21990,'frost'),I('★ Спорт. перчатки','Оккультизм','gloves','gold',22896,'pandora')]},
  {id:'legend',name:'Легенда',price:49990,tag:'Самые дорогие скины',col:'--r-gold',items:[
    I('M4A1-S','Добро пожаловать в джунгли','rifle','cov',34420,'jungle'),I('AK-47','Огненный змей','rifle','cov',38843,'serpent'),I('Desert Eagle','Пламя','pistol','res',48427,'blaze'),
    I('AWP','Пустынная гидра','awp','cov',67534,'hydra'),I('AK-47','Золотая арабеска','rifle','cov',70239,'arabesque'),I('M4A4','Посейдон','rifle','cov',78276,'poseidon'),
@@ -881,7 +885,56 @@ function renderInv(){
 $('#sellAll').onclick=()=>{S.bal+=S.inv.reduce((a,b)=>a+b.p,0);S.inv=[];render();renderInv();toast('Всё продано')};
 
 // Upgrade
-const EXTRA=[I('AK-47','Африканская сетка','rifle','cons',4,'mesh'),I('Glock-18','Океаническая топография','pistol','cons',4),I('M4A4','Мейнфрейм','rifle','mil',2),
+const EXTRA=[
+ // cheap
+ I('M4A4','Зубастик','rifle','mil',4),I('Glock-18','Коралловое цветение','pistol','mil',11),I('Glock-18','Расписная бирюза','pistol','mil',11),
+ I('Desert Eagle','Бронзовая декорация','pistol','mil',9),I('Desert Eagle','Городской щебень','pistol','ind',11),I('USP-S','Бесшумный выстрел','pistol','mil',15),
+ I('USP-S','Тропический бриз','pistol','mil',16),I('M4A1-S','Грязевой стандарт','rifle','mil',21),I('M4A1-S','Эмфорозавр-S','rifle','res',29),
+ I('M4A4','Зубастик (FN)','rifle','mil',51),I('M4A4','Полимерный рожок (FN)','rifle','mil',61),I('Glock-18','Зимний вариант (FN)','pistol','ind',62),
+ I('Glock-18','Коралловое цветение (FN)','pistol','mil',80),I('Desert Eagle','Недовольство (FN)','pistol','mil',87),I('AWP','Гадюка (FN)','awp','res',91),
+ I('AK-47','Затерянная земля (FN)','rifle','mil',111),I('M4A1-S','Эмфорозавр-S (FN)','rifle','res',115),I('M4A1-S','Грязевой стандарт (FN)','rifle','mil',126),
+ I('USP-S','Пустынная тактика (FN)','pistol','ind',186,'forest'),I('AK-47','Зимняя зелень (FN)','rifle','ind',244,'forest'),I('AWP','Бог червей (FN)','awp','res',245),
+ I('USP-S','Лесные листья (FN)','pistol','ind',292,'forest'),I('AWP','Африканская сетка (FN)','awp','cons',362,'mesh'),I('AK-47','Африканская сетка (FN)','rifle','cons',364,'mesh'),
+ I('AWP','Капилляры (FN)','awp','mil',378),I('USP-S','Едва зелёный','pistol','res',467,'jungle'),I('M4A1-S','Северный лес (FN)','rifle','ind',562,'forest'),
+ I('M4A1-S','Нитро (FN)','rifle','mil',738,'omega'),
+ // mid
+ I('USP-S','Извилины (FN)','pistol','cls',1826),I('USP-S','Едва зелёный (FN)','pistol','res',2499,'jungle'),I('Glock-18','Дух воды (FN)','pistol','cls',3319),
+ I('AWP','Неонуар (FN)','awp','cov',3416,'neonoir'),I('AWP','Электрический улей (FN)','awp','cls',4577),I('Desert Eagle','Поток информации (FN)','pistol','cov',5365,'printstream'),
+ I('M4A4','Неонуар (FN)','rifle','cov',6348,'neonoir'),I('USP-S','Предатель (FN)','pistol','cov',6566,'codered'),I('USP-S','Поток информации (FN)','pistol','cov',6637,'printstream'),
+ I('Glock-18','Гамма-волны (FN)','pistol','cov',6642,'gamma'),I('USP-S','Неонуар (FN)','pistol','cov',8077,'neonoir'),I('AWP','Пиксельный камуфляж Розовый (FN)','awp','cls',9373,'pinkddpat'),
+ I('AK-47','Красная линия (MW)','rifle','cls',9413,'redline'),I('AWP','Дикое пламя (FN)','awp','cov',9929,'blaze'),I('M4A1-S','Второй игрок (FN)','rifle','cov',10231,'neonrider'),
+ I('AWP','Скоростной зверь (FN)','awp','cov',10561,'hyper'),I('AK-47','Кровавый спорт (FN)','rifle','cov',11091,'bloodsport'),I('Glock-18','Неонуар (FN)','pistol','cov',11893,'neonoir'),
+ I('M4A4','Азимов (FN)','rifle','cov',12710,'asiimov'),I('Desert Eagle','Код красный (FN)','pistol','cov',12932,'codered'),I('USP-S','Орион (FN)','pistol','cls',13679,'gungnir'),
+ I('AK-47','Неоновый гонщик (FN)','rifle','cov',14987,'neonrider'),I('M4A1-S','Механо-пушка (FN)','rifle','cov',15280,'mecha'),I('M4A4','Император (FN)','rifle','cov',15404,'emperor'),
+ I('M4A1-S','Золотая спираль (FN)','rifle','cov',16365,'koi'),I('USP-S','Подтверждённое убийство (FN)','pistol','cov',16724,'killconf'),I('M4A1-S','Скоростной зверь (FN)','rifle','cov',18777,'hyper'),
+ I('AK-47','Азимов (FN)','rifle','cov',23524,'asiimov'),I('M4A1-S','Поток информации (FN)','rifle','cov',29290,'printstream'),I('AK-47','Вулкан (FN)','rifle','cov',38894,'vulcan'),
+ I('AWP','Удар молнии (FN)','awp','cov',40526,'lightning'),
+ // gloves
+ I('★ Перчатки спецназа','Покоритель гор','gloves','gold',5991,'forest'),I('★ Перчатки спецназа','Полевой агент','gloves','gold',6436,'forest'),
+ I('★ Перчатки спецназа','Кровавая паутина','gloves','gold',7472,'codered'),I('★ Перчатки спецназа','Пиксельный камуфляж «Лес»','gloves','gold',7547,'forest'),
+ I('★ Перчатки спецназа','Мраморный градиент','gloves','gold',7939,'marble'),I('★ Перчатки спецназа','Великий вал','gloves','gold',9705,'navy'),
+ I('★ Перчатки спецназа','Лучи солнца','gloves','gold',9712,'omega'),I('★ Спорт. перчатки','Кровавый шемах','gloves','gold',9770,'kimono'),
+ I('★ Спорт. перчатки','Фиолетовый бисер','gloves','gold',12304,'lightning'),I('★ Перчатки спецназа','Основа','gloves','gold',12485,'superc'),
+ I('★ Спорт. перчатки','Мясник','gloves','gold',12543,'codered'),I('★ Перчатки спецназа','Чёрная книга','gloves','gold',14024,'night'),
+ I('★ Перчатки спецназа','Лаймовый поликамуфляж','gloves','gold',14455,'nocts'),I('★ Спорт. перчатки','Засуха','gloves','gold',21323,'bronze'),
+ I('★ Перчатки спецназа','Погоня за облаком','gloves','gold',21990,'frost'),I('★ Спорт. перчатки','Оккультизм','gloves','gold',22896,'pandora'),
+ // knives
+ I('★ Керамбит','Чистая вода','karambit','gold',32909,'frost'),I('★ Керамбит','Ультрафиолет','karambit','gold',33347,'lightning'),I('★ Керамбит','Пыльник','karambit','gold',33468,'bronze'),
+ I('★ Нож-бабочка','Ультрафиолет','butterfly','gold',34690,'lightning'),I('★ Керамбит','Ручная роспись','karambit','gold',35716,'neonrider'),I('★ Нож-бабочка','Легенды','butterfly','gold',36564,'lore'),
+ I('★ Керамбит','Легенды','karambit','gold',37417,'lore'),I('★ Керамбит','Патина','karambit','gold',37878,'choco'),I('★ Нож-бабочка','Ручная роспись','butterfly','gold',39242,'neonrider'),
+ I('★ Керамбит','Кровавая паутина','karambit','gold',41391,'codered'),I('★ Нож-бабочка','Кровавая паутина','butterfly','gold',42227,'codered'),I('★ Керамбит','Дамасская сталь','karambit','gold',42445,'urban'),
+ I('★ Керамбит','Чёрный глянец','karambit','gold',43446,'night'),I('★ Нож-бабочка','Поверхностная закалка','butterfly','gold',47662,'amphib'),I('★ Нож-бабочка','Автотроника','butterfly','gold',48832,'codered'),
+ I('★ Керамбит','Поверхностная закалка','karambit','gold',48914,'amphib'),I('★ Керамбит','Вороненая сталь','karambit','gold',49282,'navy'),I('★ Нож-бабочка','Дамасская сталь','butterfly','gold',49753,'urban'),
+ I('★ Нож-бабочка','Вороненая сталь','butterfly','gold',50755,'navy'),I('★ Керамбит','Автотроника','karambit','gold',51658,'codered'),I('★ Керамбит','Ванильный','karambit','gold',70155,'urban'),
+ I('★ Нож-бабочка','Ванильный','butterfly','gold',80972,'urban'),I('★ Нож-бабочка','Гамма-волны','butterfly','gold',114063,'gamma'),
+ // high end
+ I('Desert Eagle','Пламя (FN)','pistol','res',62529,'blaze'),I('AWP','Пустынная гидра (FN)','awp','cov',95880,'hydra'),I('M4A4','Посейдон (FN)','rifle','cov',102476,'poseidon'),
+ I('M4A1-S','Хот-род (FN)','rifle','cls',112466,'hotrod'),I('M4A1-S','Добро пожаловать в джунгли (FN)','rifle','cov',123753,'jungle'),I('AK-47','Золотая арабеска (FN)','rifle','cov',130927,'arabesque'),
+ I('Glock-18','Градиент (FN)','pistol','res',139213,'fade'),I('AK-47','Огненный змей (FN)','rifle','cov',168710,'serpent'),I('AWP','Принц (FN)','awp','cov',195997,'prince'),
+ I('AWP','Медуза (FN)','awp','cov',368597,'medusa'),I('★ Спорт. перчатки','Порок (FN)','gloves','gold',435842,'vice'),I('M4A4','Вой (FN)','rifle','cov',523447,'howl'),
+ I('★ Спорт. перчатки','Сверхпроводник (FN)','gloves','gold',676703,'superc'),I('★ Перчатки спецназа','Кровавое кимоно (FN)','gloves','gold',739213,'kimono'),
+ I('AWP','История о драконе (FN)','awp','cov',865070,'lore'),I('AWP','Гунгнир (FN)','awp','cov',899332,'gungnir'),
+I('AK-47','Африканская сетка','rifle','cons',4,'mesh'),I('Glock-18','Океаническая топография','pistol','cons',4),I('M4A4','Мейнфрейм','rifle','mil',2),
  I('USP-S','27','pistol','mil',13),I('M4A1-S','Нитро','rifle','mil',29),I('Desert Eagle','Мятный веер','pistol','mil',10),
  I('USP-S','Поток информации','pistol','cov',2197,'printstream'),I('USP-S','Орион','pistol','cls',3384,'gungnir'),I('M4A1-S','Второй игрок','rifle','cov',3464,'neonrider'),
  I('M4A4','Азимов','rifle','cov',5862,'asiimov'),I('M4A1-S','Скоростной зверь','rifle','cov',7470,'hyper'),I('USP-S','Неонуар','pistol','cov',7536,'neonoir'),
@@ -915,7 +968,7 @@ function renderUp(){
   $('#upFrom').innerHTML=!its.length?'Выбери скины для ставки ниже':its.length===1?itemHTML(its[0]):
     `<div class="stack"><div class="stk-n">Ставка: ${its.length} скин${its.length<5?'а':'ов'}</div><div class="stk-s">${rub(s)}</div><div class="stk-l">${its.map(x=>x.w+' | '+x.n+' · '+rub(x.p)).join('<br>')}</div></div>`;
   $('#upTo').innerHTML=tgt?itemHTML(tgt):(s?'Выбери скин справа или множитель':'Здесь будет скин, который хочешь получить');
-  $('#upBtn').disabled=!(s&&tgt)||upBusy;
+  $('#upBtn').disabled=!(s&&tgt)||upBusy;$('#upFast').disabled=$('#upBtn').disabled;
   $('#upBtn').textContent=s&&tgt?`Апгрейд ${rub(s)} → ${rub(tgt.p)}`:'Апгрейд';
   $('#upInv').innerHTML=S.inv.length?S.inv.map(it=>itemHTML(it,`data-pick="${it.id}" role="button" tabindex="0" aria-pressed="${stakeIds.includes(it.id)}"`).replace('class="it"',`class="it pick${stakeIds.includes(it.id)?' sel':''}"`)).join(''):'<div class="empty" style="grid-column:1/-1">Нет скинов. Открой кейс, чтобы было что апгрейдить.</div>';
   const list=s?CAT.filter(x=>x.p>=s*MINX):CAT;
@@ -925,28 +978,25 @@ function renderUp(){
   bind('[data-tgt]',el=>{tgt=CAT[+el.dataset.tgt];mult=null});
   if(MODE==='mystery')renderMys();
 }
-function spinNeedle(finalMod,dur){return new Promise(res=>{const a0=needleDeg,cur=((a0%360)+360)%360,a1=a0+360*5+((finalMod-cur+360)%360),t0=performance.now();let lt=Math.floor(a0/15);
+function spinNeedle(finalMod,dur,turns=5){return new Promise(res=>{const a0=needleDeg,cur=((a0%360)+360)%360,a1=a0+360*turns+((finalMod-cur+360)%360),t0=performance.now();let lt=Math.floor(a0/15);
   (function f(now){const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,4);needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;const t=Math.floor(needleDeg/15);if(t!==lt){lt=t;sfx.utick()}k<1?requestAnimationFrame(f):res()})(t0)})}
 function creepNeedle(target,dur){return new Promise(res=>{const a0=needleDeg,cur=((a0%360)+360)%360;let d=target-cur;if(d>180)d-=360;if(d<-180)d+=360;const a1=a0+d,t0=performance.now();sfx.utick();
   (function f(now){const k=Math.min(1,(now-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;k<1?requestAnimationFrame(f):res()})(t0)})}
-$('#upBtn').onclick=async()=>{
+async function runUpgrade(fast){
   const s=stakeSum();if(!s||!tgt||upBusy)return;
   const target=tgt,ch=curChance(s,target.p),roll=Math.random(),win=roll<ch;
-  upBusy=true;$('#upBtn').disabled=true;sfx.ustart();
+  upBusy=true;$('#upBtn').disabled=$('#upFast').disabled=true;sfx.ustart();
   const dial=$('.dial');dial.classList.remove('won','lost');
-  const B=ch*360;let fin=roll*360,pre=null;
-  if(!REDUCED&&B>16&&B<344&&Math.random()<.45){ // near-miss on the zone border; outcome stays the same
-    const a=2+Math.random()*5,b=4+Math.random()*9;
-    if(win){pre=360-b;fin=a}else{pre=B-b;fin=B+a} // always crosses the border going forward
-  }
-  await spinNeedle(pre??fin,REDUCED?400:4000);
-  if(pre!==null){await wait(420+Math.random()*380);await creepNeedle(fin,650+Math.random()*350);await wait(150)}
+  // the needle stops straight on the result: normal 7 s, fast 1.2 s
+  await spinNeedle(roll*360,REDUCED?400:(fast?1200:7000),fast?3:9);
   const ids=new Set(stakeIds);S.inv=S.inv.filter(x=>!ids.has(x.id));S.ups++;
   dial.classList.add(win?'won':'lost');setTimeout(()=>dial.classList.remove('won','lost'),1600);
   if(win){const n={...target,id:++uid};S.inv.unshift(n);S.best=Math.max(S.best||0,n.p);pushFeed(n,true);sfx.win();toast(`Победа! ${target.w} | ${target.n}`);celebrate(`Апгрейд удался · x${(target.p/s).toFixed(2)}`,target);stakeIds=[n.id]}
   else{sfx.lose();toast('Не повезло, ставка сгорела');stakeIds=[]}
   tgt=null;upBusy=false;render();renderUp();
-};
+}
+$('#upBtn').onclick=()=>runUpgrade(false);
+$('#upFast').onclick=()=>runUpgrade(true);
 // Mystery upgrade: stake V → random skin worth x0.3…x5 of V, average return 92%
 let MODE='classic',mysKey='';
 const MYS_LO=.3,MYS_HI=5,MYS_RTP=.92;
