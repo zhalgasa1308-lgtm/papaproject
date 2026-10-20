@@ -68,7 +68,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 .cases{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
 .case{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;transition:transform .15s,border-color .15s;display:flex;flex-direction:column;gap:6px}
 .case:hover{transform:translateY(-3px);border-color:var(--c)}
-.crate{height:110px;display:grid;place-items:center}
+.crate{height:130px;display:grid;place-items:center}
 .crate svg{width:120px;filter:drop-shadow(0 8px 18px color-mix(in srgb,var(--c) 45%,transparent))}
 .case .t{font-family:var(--f-display);font-size:16px}
 .case .p{font-family:var(--f-mono);color:var(--accent)}
@@ -78,7 +78,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 .back{background:none;color:var(--muted);padding:0;margin-bottom:14px;font-weight:600}
 .back:hover{color:var(--fg)}
 .openhead{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}
-.openhead .crate{height:auto} .openhead svg{width:80px}
+.openhead .crate{height:auto}
 .roul{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;height:170px;margin-bottom:16px}
 .strip{display:flex;gap:6px;padding:15px 0;will-change:transform}
 .strip .it{flex:0 0 130px}
@@ -173,6 +173,51 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);padding:10px 16px;border-radius:10px;z-index:60;font-weight:600}
 
 
+
+/* ===== 3D crate ===== */
+.c3d{--s:78px;--h:calc(var(--s)*.72);position:relative;width:calc(var(--s)*1.7);height:calc(var(--s)*1.65);perspective:620px;display:grid;place-items:center}
+.c3d.big{--s:96px}
+.c3d-box{position:relative;width:var(--s);height:var(--h);transform-style:preserve-3d;transform:rotateX(-22deg) rotateY(-32deg);animation:c3dFloat 4.5s ease-in-out infinite}
+.c3d .f{position:absolute;left:0;top:0;width:var(--s);height:var(--h);box-sizing:border-box;border:2px solid color-mix(in srgb,var(--c) 55%,#000);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 75%,#fff 10%),color-mix(in srgb,var(--c) 55%,#000 35%));backface-visibility:hidden}
+.c3d .fr{transform:translateZ(calc(var(--s)/2))}
+.c3d .bk{transform:rotateY(180deg) translateZ(calc(var(--s)/2));filter:brightness(.6)}
+.c3d .lf{transform:rotateY(-90deg) translateZ(calc(var(--s)/2));filter:brightness(.72)}
+.c3d .rt{transform:rotateY(90deg) translateZ(calc(var(--s)/2));filter:brightness(.85)}
+.c3d .bt{height:var(--s);transform:translateY(calc(var(--h) - var(--s)/2)) rotateX(-90deg);filter:brightness(.4)}
+.c3d .fr::before,.c3d .rt::before,.c3d .lf::before,.c3d .bk::before{content:"";position:absolute;left:0;right:0;top:38%;height:18%;background:color-mix(in srgb,var(--c) 40%,#111);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.c3d .fr::after{content:"";position:absolute;left:50%;top:30%;width:22%;height:34%;margin-left:-11%;border-radius:3px;background:linear-gradient(180deg,#fff2c4,#ffb347 60%,#9a5200);box-shadow:0 0 10px rgba(255,190,90,.8)}
+.c3d .inner{position:absolute;left:0;top:0;width:var(--s);height:var(--s);transform:translateY(calc(var(--s)/-2 + 2px)) rotateX(90deg);background:radial-gradient(circle,#fff6d0,color-mix(in srgb,var(--c) 70%,#fff) 40%,color-mix(in srgb,var(--c) 40%,#000));opacity:0}
+.c3d .lid{position:absolute;left:-4%;top:0;width:108%;height:calc(var(--s)*1.08);transform-style:preserve-3d;transform:translateY(calc(var(--s)*-.54)) rotateX(90deg)}
+.c3d .lid .tp{width:100%;height:100%;transform:translateZ(0);border-radius:4px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--c) 70%,#fff 25%),color-mix(in srgb,var(--c) 60%,#000 20%));border:2px solid color-mix(in srgb,var(--c) 50%,#000)}
+.c3d .lid .tp::before{content:"";position:absolute;left:38%;top:0;bottom:0;width:24%;background:color-mix(in srgb,var(--c) 40%,#111);box-shadow:inset 1px 0 0 rgba(255,255,255,.2)}
+.c3d-sh{position:absolute;left:50%;bottom:6%;width:calc(var(--s)*1.3);height:calc(var(--s)*.26);margin-left:calc(var(--s)*-.65);border-radius:50%;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 45%,rgba(0,0,0,.7)),transparent);filter:blur(2px);animation:c3dShadow 4.5s ease-in-out infinite}
+.c3d-glow{position:absolute;left:50%;top:-10%;width:calc(var(--s)*.9);height:calc(var(--s)*1.4);margin-left:calc(var(--s)*-.45);opacity:0;pointer-events:none;
+  background:linear-gradient(0deg,color-mix(in srgb,var(--c) 70%,#fff),transparent);filter:blur(10px);border-radius:50% 50% 10% 10%}
+@keyframes c3dFloat{0%,100%{transform:translateY(0) rotateX(-22deg) rotateY(-32deg)}50%{transform:translateY(-8px) rotateX(-18deg) rotateY(-14deg)}}
+@keyframes c3dShadow{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(.82);opacity:.6}}
+@keyframes c3dSpin{from{transform:translateY(-6px) rotateX(-22deg) rotateY(0)}to{transform:translateY(-6px) rotateX(-22deg) rotateY(360deg)}}
+.case:hover .c3d-box,.case:focus-visible .c3d-box{animation:c3dSpin 2.6s linear infinite}
+/* opening: squash, jump, spin, land, lid pops */
+.c3d.jump .c3d-box{animation:c3dJump .95s cubic-bezier(.3,.7,.3,1) both}
+.c3d.jump .c3d-sh{animation:c3dJumpSh .95s cubic-bezier(.3,.7,.3,1) both}
+@keyframes c3dJump{
+  0%{transform:translateY(0) rotateX(-22deg) rotateY(-32deg) scale3d(1,1,1)}
+  14%{transform:translateY(6px) rotateX(-22deg) rotateY(-32deg) scale3d(1.12,.82,1.12)}
+  45%{transform:translateY(-58px) rotateX(-12deg) rotateY(148deg) scale3d(.95,1.08,.95)}
+  70%{transform:translateY(0) rotateX(-22deg) rotateY(328deg) scale3d(1.1,.88,1.1)}
+  82%{transform:translateY(-10px) rotateX(-22deg) rotateY(328deg) scale3d(1,1,1)}
+  91%{transform:translateY(0) rotateX(-22deg) rotateY(328deg) rotateZ(3deg)}
+  100%{transform:translateY(0) rotateX(-22deg) rotateY(328deg)}}
+@keyframes c3dJumpSh{0%,100%{transform:scale(1);opacity:.9}14%{transform:scale(1.15)}45%{transform:scale(.45);opacity:.3}70%{transform:scale(1.1);opacity:.9}}
+.c3d.open .c3d-box{animation:none;transform:translateY(0) rotateX(-22deg) rotateY(328deg)}
+.c3d.open .lid{animation:c3dLid .8s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes c3dLid{to{transform:translateY(calc(var(--s)*-1.9)) translateZ(-20px) rotateX(150deg) rotateZ(25deg);opacity:0}}
+.c3d.open .inner{opacity:1;transition:opacity .2s}
+.c3d.open .c3d-glow{animation:c3dGlow 1.6s ease-out forwards}
+@keyframes c3dGlow{0%{opacity:0;transform:scaleY(.2)}25%{opacity:1;transform:scaleY(1.2)}100%{opacity:.35;transform:scaleY(1)}}
 /* ===== 3D skin ===== */
 .btn{box-shadow:0 4px 0 #8a4300,0 10px 22px -8px rgba(255,120,0,.6),inset 0 1px 0 rgba(255,255,255,.55);transition:transform .08s,box-shadow .08s}
 .btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #8a4300,inset 0 1px 0 rgba(255,255,255,.4)}
@@ -186,7 +231,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 .case{transform-style:preserve-3d;background:linear-gradient(160deg,rgba(255,255,255,.06),transparent 45%),var(--panel);box-shadow:0 12px 26px -16px rgba(0,0,0,.95);transition:transform .3s,box-shadow .3s,border-color .3s}
 .case:hover{transform:rotateX(9deg) translateY(-6px);box-shadow:0 26px 40px -18px color-mix(in srgb,var(--c) 70%,#000)}
 .case .crate svg{transition:transform .35s}
-.case:hover .crate svg{transform:translateZ(40px) scale(1.1) rotate(-4deg)}
+
 
 .roul{height:auto;padding:0;perspective:900px;perspective-origin:50% 50%;border-radius:16px;
   background:radial-gradient(80% 120% at 50% 50%,#142035,#05080d 75%);border:1px solid #2b3a52;
@@ -657,6 +702,7 @@ const sfx={
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $=s=>document.querySelector(s);
+const crate3d=(col,big)=>`<div class="c3d${big?' big':''}" style="--c:var(${col})"><div class="c3d-sh"></div><div class="c3d-glow"></div><div class="c3d-box"><i class="f bt"></i><i class="f bk"></i><i class="f lf"></i><i class="f rt"></i><i class="inner"></i><i class="f fr"></i><div class="lid"><i class="f tp"></i></div></div></div>`;
 const fmt=n=>Math.round(n).toLocaleString('ru-RU');
 const rub=n=>(n<100?(+n).toLocaleString('ru-RU',{maximumFractionDigits:2}):fmt(n))+' ₽';
 // Google sign-in: paste the OAuth Client ID (Google Cloud → APIs & Services → Credentials) here
@@ -699,7 +745,7 @@ function render(){
 
 // Cases grid
 $('#caseGrid').innerHTML=CASES.map(c=>`<button class="case" data-case="${c.id}" style="--c:var(${c.col})">
-  <div class="crate" style="color:var(${c.col})"><svg viewBox="0 0 120 90"><use href="#ic-crate"/></svg></div>
+  <div class="crate">${crate3d(c.col)}</div>
   <div class="tag">${c.tag}</div><div class="t">${c.name}</div><div class="p">${c.price?rub(c.price):'Бесплатно'}</div></button>`).join('');
 document.querySelectorAll('.case').forEach(b=>b.onclick=()=>openCase(b.dataset.case));
 $('#heroOpen').onclick=()=>openCase('free');
@@ -719,7 +765,7 @@ let cur=null,qty=1,spinning=false,lastWins=[];
 function openCase(id){
   sfx.click();
   cur=CASES.find(c=>c.id===id);
-  $('#oCrate').innerHTML=`<svg viewBox="0 0 120 90" style="color:var(${cur.col})"><use href="#ic-crate"/></svg>`;
+  $('#oCrate').innerHTML=crate3d(cur.col,true);
   $('#oTitle').textContent='Кейс «'+cur.name+'»';
   $('#oSub').textContent=(cur.price?rub(cur.price)+' за штуку':'Бесплатно, раз в 60 секунд')+' · '+cur.items.length+' предметов';
   $('#contents').innerHTML=[...cur.items].sort((a,b)=>b.p-a.p).map(it=>itemHTML(it).replace('</div></div>',`</div><div class="ch">${(it.chance*100).toFixed(it.chance<.01?2:1)}%</div></div>`)).join('');
@@ -774,6 +820,9 @@ async function spin(fast){
   const strips=[...document.querySelectorAll('#roulettes .strip')];
   const dur=fast?1200:6000;
   sfx.start();
+  const cr=$('#oCrate .c3d');
+  if(cr&&!REDUCED){cr.classList.remove('jump','open');cr.offsetWidth;cr.classList.add('jump');
+    if(!fast){await wait(600);cr.classList.add('open');tone(620,.25,'sine',.03,0,500);await wait(250)}else{setTimeout(()=>cr.classList.add('open'),500)}}
   const plans=strips.map((s,i)=>{fillStrip(s,wins[i]);return fast||REDUCED?0:teasePlan(s,wins[i],cur.items)});
   await Promise.all(strips.map((s,i)=>animateStrip(s,s.children[0].offsetWidth+6,s.parentElement.offsetWidth,dur,plans[i],i===0?sfx.tick:null)));
   await wait(300);
