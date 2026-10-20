@@ -146,6 +146,17 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 .user span{font-weight:700;font-size:13px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user.cloud-ok img{box-shadow:0 0 0 2px var(--good)}
 .user.cloud-err img{box-shadow:0 0 0 2px var(--bad)}
+.admin-box{width:min(760px,100%);text-align:left}
+.admin-box h3{text-align:left}
+.adm-list{display:grid;gap:8px;max-height:60vh;overflow:auto;margin-bottom:16px}
+.adm-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.adm-row>div{min-width:0}
+.adm-n{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-m{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-ed{display:flex;gap:6px;align-items:center}
+.adm-ed input{width:120px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px;font-family:var(--f-mono)}
+.adm-ed .btn{padding:8px 12px}
+@media (max-width:560px){.adm-row{grid-template-columns:1fr}}
 .user .out{background:transparent;color:var(--muted);font-size:12px;padding:4px 6px;border-radius:6px}
 .user .out:hover{color:var(--fg);background:var(--bg)}
 .login-box .sub{margin:0 0 16px}
@@ -332,7 +343,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
       <div class="coins"><span id="bal">0</span> ₽</div>
       <button class="btn" id="bonus">+ Бонус</button>
       <button class="btn ghost login" id="loginBtn">Войти через Google</button>
-      <div class="user" id="userBox" hidden><img id="userPic" alt=""><span id="userName"></span><button class="out" id="logoutBtn" aria-label="Выйти">Выйти</button></div>
+      <div class="user" id="userBox" hidden><img id="userPic" alt=""><span id="userName"></span><button class="out" id="adminBtn" hidden>Админ</button><button class="out" id="logoutBtn" aria-label="Выйти">Выйти</button></div>
       <button class="mute" id="mute" aria-label="Звук"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9z"/><path class="wave" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="x" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 9l6 6M22 9l-6 6"/></svg></button>
     </div>
   </div>
@@ -453,6 +464,14 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
     <p class="sub" id="loginNote">Войди через Google, чтобы баланс и инвентарь были привязаны к твоему аккаунту.</p>
     <div id="gBtn" class="gbtn"></div>
     <div class="mact"><button class="btn ghost" id="loginClose">Закрыть</button></div>
+  </div>
+</div>
+<div class="modal" id="adminModal" hidden>
+  <div class="mbox admin-box">
+    <h3>Админ-панель</h3>
+    <p class="sub" id="adminNote">Загружаю игроков…</p>
+    <div class="adm-list" id="adminList"></div>
+    <div class="mact"><button class="btn ghost" id="adminReload">Обновить</button><button class="btn ghost" id="adminClose">Закрыть</button></div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -947,6 +966,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCelebrate()});
 function decodeJwt(t){const p=t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');const bin=atob(p+'='.repeat((4-p.length%4)%4));return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))))}
 function paintUser(){
   $('#loginBtn').hidden=!!USER;$('#userBox').hidden=!USER;
+  $('#adminBtn').hidden=!(USER&&FB&&USER.email===ADMIN_EMAIL);
   if(USER){$('#userName').textContent=USER.name;$('#userPic').src=USER.picture||'';$('#userPic').alt=USER.name}
 }
 function switchUser(u){
@@ -973,7 +993,7 @@ function setCloud(st){const b=$('#userBox');b.classList.toggle('cloud-ok',st==='
 function pushCloud(){
   if(!FB||!USER||!FB.auth.currentUser)return;
   clearTimeout(cloudTimer);
-  cloudTimer=setTimeout(()=>{FB.db.collection('players').doc(FB.auth.currentUser.uid).set({state:JSON.parse(JSON.stringify(S)),name:USER.name,updated:Date.now()}).then(()=>setCloud('ok')).catch(()=>setCloud('err'))},1200);
+  cloudTimer=setTimeout(()=>{FB.db.collection('players').doc(FB.auth.currentUser.uid).set({state:JSON.parse(JSON.stringify(S)),name:USER.name,email:USER.email||'',updated:Date.now()}).then(()=>setCloud('ok')).catch(()=>setCloud('err'))},1200);
 }
 async function initFirebase(){
   if(FB)return FB;
@@ -984,6 +1004,7 @@ async function initFirebase(){
   FB.auth.onAuthStateChanged(async u=>{
     if(!u){if(USER)switchUser(null);return}
     if(!USER||USER.sub!==u.uid)switchUser({sub:u.uid,name:u.displayName||u.email,picture:u.photoURL,email:u.email});
+    else{USER.email=u.email;paintUser()}
     try{
       const doc=await FB.db.collection('players').doc(u.uid).get();
       const d=doc.exists?doc.data().state:null;
@@ -1004,6 +1025,34 @@ $('#logoutBtn').onclick=async()=>{
   else{try{window.google&&google.accounts&&google.accounts.id.disableAutoSelect()}catch(e){}switchUser(null)}
   toast('Ты вышел из аккаунта')
 };
+// Admin panel (only for ADMIN_EMAIL; Firestore rules enforce the same)
+const ADMIN_EMAIL='zhalgasa1308@gmail.com';
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function loadAdmin(){
+  $('#adminNote').textContent='Загружаю игроков…';$('#adminList').innerHTML='';
+  try{
+    const snap=await FB.db.collection('players').get();
+    const rows=[];snap.forEach(d=>rows.push({id:d.id,...d.data()}));
+    rows.sort((a,b)=>(b.updated||0)-(a.updated||0));
+    $('#adminNote').textContent=`Игроков: ${rows.length}. Впиши новый баланс и нажми «Сохранить».`;
+    $('#adminList').innerHTML=rows.map(r=>{const st=r.state||{};return `<div class="adm-row"><div><div class="adm-n">${esc(r.name||'Без имени')}${r.id===FB.auth.currentUser.uid?' (ты)':''}</div>
+      <div class="adm-m">${esc(r.email||r.id)} · ${rub(st.bal||0)} · кейсов ${st.opened||0} · ${r.updated?new Date(r.updated).toLocaleString('ru-RU'):'—'}</div></div>
+      <div class="adm-ed"><input id="adm-${esc(r.id)}" type="number" min="0" step="1" value="${Math.round(st.bal||0)}" aria-label="Баланс"><button class="btn" data-adm="${esc(r.id)}">Сохранить</button></div></div>`}).join('')||'<div class="empty">Пока нет игроков с облачным сохранением.</div>';
+    document.querySelectorAll('[data-adm]').forEach(b=>b.onclick=async()=>{
+      const id=b.dataset.adm,v=Math.max(0,Math.round(+document.getElementById('adm-'+id).value||0));
+      b.disabled=true;
+      try{
+        if(id===FB.auth.currentUser.uid){S.bal=v;save();render();clearTimeout(cloudTimer);await FB.db.collection('players').doc(id).set({state:JSON.parse(JSON.stringify(S)),name:USER.name,email:USER.email||'',updated:Date.now()})}
+        else await FB.db.collection('players').doc(id).update({'state.bal':v,'state.ts':Date.now(),updated:Date.now()});
+        toast('Баланс сохранён: '+rub(v));loadAdmin();
+      }catch(e){toast('Не удалось сохранить: нет прав. Проверь правила Firestore.');b.disabled=false}
+    });
+  }catch(e){$('#adminNote').textContent='Нет доступа к списку игроков. Обнови правила Firestore (см. инструкцию).'}
+}
+$('#adminBtn').onclick=()=>{$('#adminModal').hidden=false;loadAdmin()};
+$('#adminReload').onclick=loadAdmin;
+$('#adminClose').onclick=()=>$('#adminModal').hidden=true;
+$('#adminModal').onclick=e=>{if(e.target.id==='adminModal')$('#adminModal').hidden=true};
 paintUser();
 if(FIREBASE_CONFIG)initFirebase().catch(()=>{});
 // Mute toggle
