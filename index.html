@@ -527,6 +527,23 @@ main h2::before{content:"";position:absolute;left:0;top:15%;bottom:15%;width:4px
 @media (max-width:900px){.banner{grid-template-columns:1fr}.hero-art{height:220px;order:-1}.hero{grid-template-columns:1fr}}
 @media (max-width:520px){.hero-float{width:80px}.f2{width:100px}.f3{width:90px}.o2{width:260px;height:260px}.banner{padding:22px}}
 @media (prefers-reduced-motion:reduce){#bgfx,.aurora{display:none}.reveal{opacity:1;transform:none}}
+
+/* ===== performance ===== */
+.aurora{animation:none;filter:blur(40px)}
+.stat,.slot,.roul,.mbox{backdrop-filter:none;-webkit-backdrop-filter:none}
+.case::before{animation:none;background:conic-gradient(from 210deg,transparent 0 55%,var(--c) 72%,#fff 76%,var(--c) 80%,transparent 95%)}
+.case:hover::before{animation:spinB 2.2s linear infinite}
+.roul .strip{will-change:transform}
+.roul .it{transform-style:flat;transition:none}
+.roul .it svg{transform:none;filter:none}
+.roul .it::before{display:none}
+.roul .it.hit{transform:scale(1.1);transition:transform .45s cubic-bezier(.2,1.5,.4,1),box-shadow .45s}
+.drum{transform:none}
+.needle,.sweep{will-change:transform}
+.dial.spinning .needle{filter:none}
+.dial.spinning .mid{animation:none}
+body.busy .aurora,body.busy .hero-float,body.busy .orbit,body.busy .c3d-sh,body.busy .live-dot,body.busy .btn::after,body.busy .fi,body.busy .fi::after,body.busy .h-glow,body.busy .logo b{animation-play-state:paused}
+body.busy .case .c3d-box{animation-play-state:paused}
 </style>
 </head>
 <body>
@@ -1050,7 +1067,7 @@ const WIN=48;
 function fillStrip(strip,winner){
   const arr=Array.from({length:60},(_,i)=>i===WIN&&winner?winner:roll(cur));
   strip.innerHTML=arr.map(it=>itemHTML(it)).join('');
-  strip.style.transition='none';strip.style.transform='translateX(0)';
+  strip.style.transition='none';strip.style.transform='translate3d(0,0,0)';
 }
 function tickLoop(strip,w,box,dur,snd){snd=snd||sfx.tick;const t0=performance.now();let last=-1;(function f(){let x=0;try{x=new DOMMatrix(getComputedStyle(strip).transform).m41}catch(e){}const idx=Math.floor((-x+box/2)/w);if(idx!==last){if(last>=0)snd();last=idx}if(performance.now()-t0<dur+150)requestAnimationFrame(f)})()}
 // Near-miss show: the result is already decided; the strip only teases a pricier neighbour before settling on it
@@ -1070,17 +1087,17 @@ async function animateStrip(strip,w,box,dur,side,snd){
   strip.getBoundingClientRect();
   const d1=side?dur*.93:dur,hold=side?420+Math.random()*380:0,creep=side?650+Math.random()*400:0;
   strip.style.transition=`transform ${d1}ms cubic-bezier(.08,.6,.12,1)`;
-  strip.style.transform=`translateX(${-(side?first:final)}px)`;
+  strip.style.transform=`translate3d(${-(side?first:final)}px,0,0)`;
   if(snd)tickLoop(strip,w,box,d1+hold+creep,snd);
   await wait(d1+hold);
-  if(side){strip.style.transition=`transform ${creep}ms cubic-bezier(.45,0,.25,1)`;strip.style.transform=`translateX(${-final}px)`;await wait(creep+80)}
+  if(side){strip.style.transition=`transform ${creep}ms cubic-bezier(.45,0,.25,1)`;strip.style.transform=`translate3d(${-final}px,0,0)`;await wait(creep+80)}
 }
 async function spin(fast){
   if(spinning)return;
   if(!cur.price){const left=60-Math.floor((Date.now()-S.lastFree)/1000);if(left>0)return toast(`Бесплатный кейс через ${left} с`);S.lastFree=Date.now()}
   else if(S.bal<cur.price*qty)return toast('Не хватает денег. Открой бесплатный кейс или продай скины.');
   S.bal-=cur.price*qty;render();
-  spinning=true;$('#spinBtn').disabled=$('#fastBtn').disabled=true;
+  spinning=true;document.body.classList.add('busy');$('#spinBtn').disabled=$('#fastBtn').disabled=true;
   const wins=Array.from({length:qty},()=>roll(cur));
   const strips=[...document.querySelectorAll('#roulettes .strip')];
   const dur=fast?1200:6000;
@@ -1098,7 +1115,7 @@ async function spin(fast){
   await wait(300);
   strips.forEach(s=>s.children[WIN].classList.add('hit'));
   await new Promise(r=>setTimeout(r,550));
-  spinning=false;$('#spinBtn').disabled=$('#fastBtn').disabled=false;
+  spinning=false;document.body.classList.remove('busy');$('#spinBtn').disabled=$('#fastBtn').disabled=false;
   S.opened+=qty;
   lastWins=wins.map(w=>({...w,id:++uid}));
   lastWins.forEach(w=>{S.best=Math.max(S.best||0,w.p);pushFeed(w,true)});
@@ -1231,7 +1248,7 @@ function renderUp(){
 let upZ0=0,upNeed=0,upRolling=false,keepRoll=false;
 function setZone(z){upZ0=z;const r=$('#ring');if(r)r.style.transform=`rotate(${z}deg)`}
 function onNeedle(deg){const sw=$('#sweep');if(sw)sw.style.transform=`rotate(${deg}deg)`;
-  if(upRolling){const pos=((((deg-upZ0)%360)+360)%360)/3.6;$('#rollNum').innerHTML=`ролл <b>${pos.toFixed(2)}</b><br>нужно &lt; ${upNeed.toFixed(2)}`}}
+}
 function spinNeedle(finalMod,dur,turns=5){return new Promise(res=>{const a0=needleDeg,cur=((a0%360)+360)%360,a1=a0+360*turns+((finalMod-cur+360)%360),t0=performance.now();let lt=Math.floor(a0/15);
   (function f(now){const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,4);needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;onNeedle(needleDeg);const t=Math.floor(needleDeg/15);if(t!==lt){lt=t;sfx.utick()}k<1?requestAnimationFrame(f):res()})(t0)})}
 function creepNeedle(target,dur){return new Promise(res=>{const a0=needleDeg,cur=((a0%360)+360)%360;let d=target-cur;if(d>180)d-=360;if(d<-180)d+=360;const a1=a0+d,t0=performance.now();sfx.utick();
@@ -1239,7 +1256,7 @@ function creepNeedle(target,dur){return new Promise(res=>{const a0=needleDeg,cur
 async function runUpgrade(fast){
   const s=stakeSum();if(!s||!tgt||upBusy)return;
   const target=tgt,ch=curChance(s,target.p),roll=Math.random(),win=roll<ch;
-  upBusy=true;$('#upBtn').disabled=$('#upFast').disabled=true;sfx.ustart();
+  upBusy=true;document.body.classList.add('busy');$('#upBtn').disabled=$('#upFast').disabled=true;sfx.ustart();
   const dial=$('.dial');dial.classList.remove('won','lost');
   // win zone jumps to a random spot, then the needle runs and stops straight on the roll: normal 7 s, fast 1.2 s
   setZone(Math.random()*360);await wait(REDUCED?0:(fast?150:550));
@@ -1251,7 +1268,7 @@ async function runUpgrade(fast){
   dial.classList.add(win?'won':'lost');setTimeout(()=>dial.classList.remove('won','lost'),1600);
   if(win){const n={...target,id:++uid};S.inv.unshift(n);S.best=Math.max(S.best||0,n.p);pushFeed(n,true);sfx.win();toast(`Победа! ${target.w} | ${target.n}`);celebrate(`Апгрейд удался · x${(target.p/s).toFixed(2)}`,target);stakeIds=[n.id]}
   else{sfx.lose();toast('Не повезло, ставка сгорела');stakeIds=[]}
-  tgt=null;upBusy=false;render();renderUp();
+  tgt=null;upBusy=false;document.body.classList.remove('busy');render();renderUp();
 }
 $('#upBtn').onclick=()=>runUpgrade(false);
 $('#upFast').onclick=()=>runUpgrade(true);
@@ -1319,7 +1336,7 @@ $('#mysBtn').onclick=async()=>{
 let fwRun=null;
 function celebrate(sub,item){
   const ov=$('#celebrate'),cv=$('#fwCanvas');$('#celSub').textContent=sub;$('#celItem').innerHTML=item?itemHTML(item):'';ov.hidden=false;
-  const ctx=cv.getContext('2d'),dpr=Math.min(2,window.devicePixelRatio||1);
+  const ctx=cv.getContext('2d'),dpr=1;
   const size=()=>{cv.width=innerWidth*dpr;cv.height=innerHeight*dpr};size();
   const parts=[],rockets=[],cols=['#ffd43b','#ff6b6b','#b583ff','#4dd4ff','#7CFF6b','#ff9f1a','#ffffff'];
   const boom=(x,y)=>{const c=cols[Math.random()*cols.length|0],n=70+Math.random()*40;for(let i=0;i<n;i++){const a=Math.PI*2*i/n,v=(2+Math.random()*4)*dpr;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,c})}
@@ -1486,14 +1503,18 @@ setInterval(()=>{const v=$('#sOn');if(v)$('#heroOnline').textContent=v.textConte
   setTimeout(()=>els.forEach(e=>e.classList.add('in')),2500); // never leave anything hidden
 })();
 (function(){
-  const cv=$('#bgfx');if(!cv||REDUCED)return;const ctx=cv.getContext('2d');let W,H,dpr=Math.min(2,devicePixelRatio||1);
-  const size=()=>{W=cv.width=innerWidth*dpr;H=cv.height=innerHeight*dpr};size();addEventListener('resize',size);
-  const cols=['255,170,60','255,110,40','181,131,255','90,200,255'];
-  const P=Array.from({length:70},()=>({x:Math.random(),y:Math.random(),r:.6+Math.random()*1.8,v:.0004+Math.random()*.0012,dx:(Math.random()-.5)*.0004,c:cols[Math.random()*cols.length|0],t:Math.random()*6}));
-  (function f(){ctx.clearRect(0,0,W,H);
-    for(const p of P){p.y-=p.v;p.x+=p.dx;p.t+=.03;if(p.y<-.02){p.y=1.02;p.x=Math.random()}
-      const a=.35+.35*Math.sin(p.t);ctx.beginPath();ctx.fillStyle=`rgba(${p.c},${a})`;ctx.shadowBlur=12*dpr;ctx.shadowColor=`rgba(${p.c},.9)`;ctx.arc(p.x*W,p.y*H,p.r*dpr,0,7);ctx.fill()}
-    requestAnimationFrame(f)})();
+  const cv=$('#bgfx');if(!cv||REDUCED)return;const ctx=cv.getContext('2d');let W,H;const dpr=1;
+  const size=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight};size();addEventListener('resize',size);
+  const sprite=c=>{const o=document.createElement('canvas');o.width=o.height=24;const g=o.getContext('2d');const gr=g.createRadialGradient(12,12,0,12,12,12);gr.addColorStop(0,`rgba(${c},1)`);gr.addColorStop(.25,`rgba(${c},.6)`);gr.addColorStop(1,`rgba(${c},0)`);g.fillStyle=gr;g.fillRect(0,0,24,24);return o};
+  const SP=['255,170,60','255,110,40','181,131,255','90,200,255'].map(sprite);
+  const P=Array.from({length:40},()=>({x:Math.random(),y:Math.random(),r:.5+Math.random(),v:.0008+Math.random()*.002,dx:(Math.random()-.5)*.0006,s:SP[Math.random()*SP.length|0],t:Math.random()*6}));
+  let last=0;
+  (function f(now){requestAnimationFrame(f);
+    if(document.hidden||document.body.classList.contains('busy')||now-last<33)return;last=now;
+    ctx.clearRect(0,0,W,H);
+    for(const p of P){p.y-=p.v;p.x+=p.dx;p.t+=.06;if(p.y<-.02){p.y=1.02;p.x=Math.random()}
+      ctx.globalAlpha=.35+.3*Math.sin(p.t);const d=14*p.r;ctx.drawImage(p.s,p.x*W-d/2,p.y*H-d/2,d,d)}
+    ctx.globalAlpha=1})(0);
 })();
 render();
 </script>
