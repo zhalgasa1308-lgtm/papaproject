@@ -195,6 +195,27 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 .it::before{opacity:.25;transition:opacity .2s}
 .it.tilt::before{opacity:1}
 .it.tilt{box-shadow:0 18px 30px -12px rgba(0,0,0,.9),0 0 26px -10px var(--c)}
+/* ===== upgrade energy core ===== */
+.dial{width:290px;height:290px}
+#ring{transition:stroke-dasharray .3s,transform .7s cubic-bezier(.2,1.3,.4,1);transform-origin:50% 50%;transform-box:fill-box}
+.sweep{position:absolute;inset:6%;border-radius:50%;z-index:2;pointer-events:none;opacity:0;transition:opacity .4s;
+  background:conic-gradient(from 0deg,transparent 0 290deg,rgba(255,200,120,.08) 300deg,rgba(255,215,150,.55) 359deg,transparent 360deg);
+  -webkit-mask:radial-gradient(circle closest-side,transparent 64%,#000 66%);mask:radial-gradient(circle closest-side,transparent 64%,#000 66%)}
+.dial.spinning .sweep{opacity:1}
+.dial.spinning .mid{box-shadow:inset 0 2px 1px rgba(255,255,255,.2),inset 0 -12px 22px rgba(0,0,0,.75),0 0 0 3px #090d15,0 0 0 5px #ffb347,0 0 40px rgba(255,160,60,.6);animation:corePulse .5s ease-in-out infinite alternate}
+@keyframes corePulse{to{filter:brightness(1.25)}}
+.shock{position:absolute;inset:0;border-radius:50%;border:3px solid var(--good);opacity:0;pointer-events:none;z-index:4}
+.dial.won .shock{animation:shockW .9s ease-out}
+.dial.won .shock.s2{animation:shockW 1.1s .15s ease-out}
+@keyframes shockW{0%{opacity:1;transform:scale(.9)}100%{opacity:0;transform:scale(1.9)}}
+.dial.lost .shock{border-color:var(--bad);animation:shockW .7s ease-out}
+.dial.lost{animation:shakeD .55s ease,flash .6s ease 2}
+@keyframes shakeD{0%,100%{transform:rotateX(18deg)}20%{transform:rotateX(18deg) translateX(-10px) rotate(-2deg)}40%{transform:rotateX(18deg) translateX(9px) rotate(2deg)}60%{transform:rotateX(18deg) translateX(-6px)}80%{transform:rotateX(18deg) translateX(4px)}}
+.roll{font-family:var(--f-mono);font-size:11px;line-height:1.35;color:#cfd8e6;margin-top:6px;min-height:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.roll b{font-size:13px}
+.roll b{color:#fff;font-weight:500}.roll b.w{color:var(--good)}.roll b.l{color:var(--bad)}
+.dial .mid{inset:25%}
+@media (max-width:760px){.dial{width:250px;height:250px}}
 /* ===== 3D crate ===== */
 .c3d{--s:78px;--h:calc(var(--s)*.72);position:relative;width:calc(var(--s)*1.7);height:calc(var(--s)*1.65);perspective:620px;display:grid;place-items:center}
 .c3d.big{--s:96px}
@@ -584,8 +605,9 @@ main h2::before{content:"";position:absolute;left:0;top:15%;bottom:15%;width:4px
       <div class="dial-stage"><div class="dial">
         <div class="bezel"></div><div class="ticks"></div>
         <svg viewBox="0 0 100 100"><defs><linearGradient id="arcG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset=".5" stop-color="#ffa726"/><stop offset="1" stop-color="#ff5e00"/></linearGradient></defs><circle class="ring-bg" cx="50" cy="50" r="44" fill="none" stroke-width="8"/><circle class="ring" id="ring" cx="50" cy="50" r="44" fill="none" stroke-width="8" stroke-dasharray="0 277"/></svg>
+        <div class="sweep" id="sweep"></div><div class="shock" id="shock"></div><div class="shock s2"></div>
         <div class="needle" id="needle"></div>
-        <div class="mid"><div><div class="pct" id="pct">0%</div><div class="lbl" id="xl">шанс</div></div></div>
+        <div class="mid"><div><div class="pct" id="pct">0%</div><div class="lbl" id="xl">шанс</div><div class="roll" id="rollNum"></div></div></div>
       </div><div class="dial-shadow"></div></div>
       <div class="slot" id="upTo"></div>
     </div>
@@ -1167,7 +1189,7 @@ const curChance=(s,t)=>mult?Math.min(MAXCH,1/mult):chanceOf(s,t);
 const pctTxt=c=>(c*100).toFixed(c<.1?2:1)+'%';
 function pickByMult(m){const s=stakeSum();if(!s||!m)return null;let best=null,bd=1e9;for(const x of CAT){if(x.p<s*MINX)continue;const d=Math.abs(Math.log(x.p/s/m));if(d<bd){bd=d;best=x}}return best}
 $('#mults').innerHTML=MULTS.map(m=>`<button data-m="${m}">x${m}</button>`).join('');
-document.querySelectorAll('#mults button').forEach(b=>b.onclick=()=>{if(upBusy)return;sfx.click();mult=+b.dataset.m;if(!stakeSum()){toast('Сначала выбери скины для ставки');return renderUp()}tgt=pickByMult(mult);if(!tgt)toast('Нет скина под такой множитель');renderUp()});
+document.querySelectorAll('#mults button').forEach(b=>b.onclick=()=>{if(upBusy)return;sfx.click();keepRoll=false;mult=+b.dataset.m;if(!stakeSum()){toast('Сначала выбери скины для ставки');return renderUp()}tgt=pickByMult(mult);if(!tgt)toast('Нет скина под такой множитель');renderUp()});
 function renderUp(){
   $('#tgtH').textContent='Что получить';$('#tgtSub').textContent='На каждом скине множитель и шанс.';
   stakeIds=stakeIds.filter(id=>S.inv.some(x=>x.id===id));
@@ -1179,6 +1201,7 @@ function renderUp(){
   $('#pct').textContent=pctTxt(ch);
   $('#xl').textContent=real?'шанс · x'+(mult?mult:real.toFixed(2)):'шанс';
   $('#ring').setAttribute('stroke-dasharray',`${ch*276.5} 277`);
+  if(!upBusy&&!keepRoll)$('#rollNum').innerHTML=ch?`нужно &lt; ${(ch*100).toFixed(2)}`:'';
   $('#upFrom').innerHTML=!its.length?'Выбери скины для ставки ниже':its.length===1?itemHTML(its[0]):
     `<div class="stack"><div class="stk-n">Ставка: ${its.length} скин${its.length<5?'а':'ов'}</div><div class="stk-s">${rub(s)}</div><div class="stk-l">${its.map(x=>x.w+' | '+x.n+' · '+rub(x.p)).join('<br>')}</div></div>`;
   $('#upTo').innerHTML=tgt?itemHTML(tgt):(s?'Выбери скин справа или множитель':'Здесь будет скин, который хочешь получить');
@@ -1187,22 +1210,30 @@ function renderUp(){
   $('#upInv').innerHTML=S.inv.length?S.inv.map(it=>itemHTML(it,`data-pick="${it.id}" role="button" tabindex="0" aria-pressed="${stakeIds.includes(it.id)}"`).replace('class="it"',`class="it pick${stakeIds.includes(it.id)?' sel':''}"`)).join(''):'<div class="empty" style="grid-column:1/-1">Нет скинов. Открой кейс, чтобы было что апгрейдить.</div>';
   const list=s?CAT.filter(x=>x.p>=s*MINX):CAT;
   $('#upTargets').innerHTML=list.length?list.map((x,i)=>{const lab=s?`x${(x.p/s).toFixed(2)} · ${pctTxt(chanceOf(s,x.p))}`:'';return itemHTML(x,`data-tgt="${CAT.indexOf(x)}" role="button" tabindex="0"`).replace('class="it"',`class="it pick${tgt===x?' sel':''}"`).replace(/<\/div>$/,lab?`<div class="ch">${lab}</div></div>`:'</div>')}).join(''):'<div class="empty" style="grid-column:1/-1">Ставка дороже всех скинов в каталоге.</div>';
-  const bind=(sel,fn)=>document.querySelectorAll(sel).forEach(el=>{el.onclick=()=>{if(!upBusy){sfx.click();fn(el);renderUp()}};el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click()}}});
+  const bind=(sel,fn)=>document.querySelectorAll(sel).forEach(el=>{el.onclick=()=>{if(!upBusy){sfx.click();keepRoll=false;fn(el);renderUp()}};el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click()}}});
   bind('[data-pick]',el=>{const id=+el.dataset.pick;if(stakeIds.includes(id))stakeIds=stakeIds.filter(x=>x!==id);else if(stakeIds.length>=6)toast('Максимум 6 скинов в ставке');else stakeIds.push(id)});
   bind('[data-tgt]',el=>{tgt=CAT[+el.dataset.tgt];mult=null});
   if(MODE==='mystery')renderMys();
 }
+let upZ0=0,upNeed=0,upRolling=false,keepRoll=false;
+function setZone(z){upZ0=z;const r=$('#ring');if(r)r.style.transform=`rotate(${z}deg)`}
+function onNeedle(deg){const sw=$('#sweep');if(sw)sw.style.transform=`rotate(${deg}deg)`;
+  if(upRolling){const pos=((((deg-upZ0)%360)+360)%360)/3.6;$('#rollNum').innerHTML=`ролл <b>${pos.toFixed(2)}</b><br>нужно &lt; ${upNeed.toFixed(2)}`}}
 function spinNeedle(finalMod,dur,turns=5){return new Promise(res=>{const a0=needleDeg,cur=((a0%360)+360)%360,a1=a0+360*turns+((finalMod-cur+360)%360),t0=performance.now();let lt=Math.floor(a0/15);
-  (function f(now){const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,4);needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;const t=Math.floor(needleDeg/15);if(t!==lt){lt=t;sfx.utick()}k<1?requestAnimationFrame(f):res()})(t0)})}
+  (function f(now){const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,4);needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;onNeedle(needleDeg);const t=Math.floor(needleDeg/15);if(t!==lt){lt=t;sfx.utick()}k<1?requestAnimationFrame(f):res()})(t0)})}
 function creepNeedle(target,dur){return new Promise(res=>{const a0=needleDeg,cur=((a0%360)+360)%360;let d=target-cur;if(d>180)d-=360;if(d<-180)d+=360;const a1=a0+d,t0=performance.now();sfx.utick();
-  (function f(now){const k=Math.min(1,(now-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;k<1?requestAnimationFrame(f):res()})(t0)})}
+  (function f(now){const k=Math.min(1,(now-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;onNeedle(needleDeg);k<1?requestAnimationFrame(f):res()})(t0)})}
 async function runUpgrade(fast){
   const s=stakeSum();if(!s||!tgt||upBusy)return;
   const target=tgt,ch=curChance(s,target.p),roll=Math.random(),win=roll<ch;
   upBusy=true;$('#upBtn').disabled=$('#upFast').disabled=true;sfx.ustart();
   const dial=$('.dial');dial.classList.remove('won','lost');
-  // the needle stops straight on the result: normal 7 s, fast 1.2 s
-  await spinNeedle(roll*360,REDUCED?400:(fast?1200:7000),fast?3:9);
+  // win zone jumps to a random spot, then the needle runs and stops straight on the roll: normal 7 s, fast 1.2 s
+  setZone(Math.random()*360);await wait(REDUCED?0:(fast?150:550));
+  upNeed=ch*100;upRolling=true;dial.classList.add('spinning');
+  await spinNeedle((upZ0+roll*360)%360,REDUCED?400:(fast?1200:7000),fast?3:9);
+  upRolling=false;dial.classList.remove('spinning');keepRoll=true;
+  $('#rollNum').innerHTML=`ролл <b class="${win?'w':'l'}">${(roll*100).toFixed(2)}</b><br>нужно &lt; ${upNeed.toFixed(2)}`;
   const ids=new Set(stakeIds);S.inv=S.inv.filter(x=>!ids.has(x.id));S.ups++;
   dial.classList.add(win?'won':'lost');setTimeout(()=>dial.classList.remove('won','lost'),1600);
   if(win){const n={...target,id:++uid};S.inv.unshift(n);S.best=Math.max(S.best||0,n.p);pushFeed(n,true);sfx.win();toast(`Победа! ${target.w} | ${target.n}`);celebrate(`Апгрейд удался · x${(target.p/s).toFixed(2)}`,target);stakeIds=[n.id]}
@@ -1301,6 +1332,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCelebrate()});
 // Google account
 function decodeJwt(t){const p=t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');const bin=atob(p+'='.repeat((4-p.length%4)%4));return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))))}
 function paintUser(){
+  const dm=document.querySelector('.logo .demo');if(dm)dm.hidden=!!USER;
   $('#loginBtn').hidden=!!USER;$('#userBox').hidden=!USER;
   $('#adminBtn').hidden=!(USER&&FB&&USER.email===ADMIN_EMAIL);
   if(USER){$('#userName').textContent=USER.name;$('#userPic').src=USER.picture||'';$('#userPic').alt=USER.name}
