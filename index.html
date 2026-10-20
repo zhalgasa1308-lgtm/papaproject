@@ -447,7 +447,7 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
   <section id="v-upgrade" hidden>
     <h2>Апгрейд</h2>
     <div class="modes" role="group" aria-label="Режим"><button data-mode="classic" aria-pressed="true">Апгрейд</button><button data-mode="mystery" aria-pressed="false">Mystery</button></div>
-    <p class="sub" id="upSub">Поставь один или несколько скинов и выбери, что хочешь получить. Шанс = 95% × ставка ÷ цена цели. Проиграл — ставка сгорает.</p>
+    <p class="sub" id="upSub">Поставь один или несколько скинов и выбери, что хочешь получить. Шанс = ставка ÷ цена цели: x2 = 50%, x3 = 33%, x5 = 20%. Проиграл — ставка сгорает.</p>
     <div id="classicBox">
     <div class="up">
       <div class="slot" id="upFrom"></div>
@@ -890,11 +890,13 @@ const EXTRA=[I('AK-47','Африканская сетка','rifle','cons',4,'mes
  I('★ Керамбит','Волны','karambit','gold',88200,'doppler'),I('★ Нож-бабочка','Мраморный градиент','butterfly','gold',94877,'marble'),I('★ Керамбит','Гамма-волны','karambit','gold',119620,'gamma'),
  I('★ Перчатки спецназа','Подушкобойки','gloves','gold',19589,'choco'),I('★ Спорт. перчатки','Крупная добыча','gloves','gold',7584,'forest')];
 const CAT=[];{const seen=new Set();[...CASES.flatMap(c=>c.items),...EXTRA].forEach(x=>{const k=x.w+'|'+x.n;if(!seen.has(k)){seen.add(k);CAT.push(x)}});CAT.sort((a,b)=>a.p-b.p)}
-const MULTS=[1.5,2,3,5,10,20],RTP=.95,MAXCH=.9,MINX=1.1;
+const MULTS=[1.5,2,3,5,10,20],RTP=1,MAXCH=.9,MINX=1.1;
 let stakeIds=[],tgt=null,mult=2,upBusy=false,needleDeg=0;
 const stakeItems=()=>stakeIds.map(id=>S.inv.find(x=>x.id===id)).filter(Boolean);
 const stakeSum=()=>stakeItems().reduce((a,b)=>a+b.p,0);
 const chanceOf=(s,t)=>Math.min(MAXCH,RTP*s/t);
+// multiplier buttons give an exact chance: x2 = 50%, x3 = 33.3%, x5 = 20% ...
+const curChance=(s,t)=>mult?Math.min(MAXCH,1/mult):chanceOf(s,t);
 const pctTxt=c=>(c*100).toFixed(c<.1?2:1)+'%';
 function pickByMult(m){const s=stakeSum();if(!s||!m)return null;let best=null,bd=1e9;for(const x of CAT){if(x.p<s*MINX)continue;const d=Math.abs(Math.log(x.p/s/m));if(d<bd){bd=d;best=x}}return best}
 $('#mults').innerHTML=MULTS.map(m=>`<button data-m="${m}">x${m}</button>`).join('');
@@ -905,10 +907,10 @@ function renderUp(){
   const its=stakeItems(),s=stakeSum();
   if(tgt&&s&&tgt.p<s*MINX)tgt=null;
   if(!tgt&&s&&mult)tgt=pickByMult(mult);
-  const real=tgt&&s?tgt.p/s:0,ch=real?chanceOf(s,tgt.p):0;
+  const real=tgt&&s?(mult||tgt.p/s):0,ch=real?curChance(s,tgt.p):0;
   document.querySelectorAll('#mults button').forEach(b=>b.setAttribute('aria-pressed',String(mult===+b.dataset.m)));
   $('#pct').textContent=pctTxt(ch);
-  $('#xl').textContent=real?'шанс · x'+real.toFixed(2):'шанс';
+  $('#xl').textContent=real?'шанс · x'+(mult?mult:real.toFixed(2)):'шанс';
   $('#ring').setAttribute('stroke-dasharray',`${ch*276.5} 277`);
   $('#upFrom').innerHTML=!its.length?'Выбери скины для ставки ниже':its.length===1?itemHTML(its[0]):
     `<div class="stack"><div class="stk-n">Ставка: ${its.length} скин${its.length<5?'а':'ов'}</div><div class="stk-s">${rub(s)}</div><div class="stk-l">${its.map(x=>x.w+' | '+x.n+' · '+rub(x.p)).join('<br>')}</div></div>`;
@@ -929,7 +931,7 @@ function creepNeedle(target,dur){return new Promise(res=>{const a0=needleDeg,cur
   (function f(now){const k=Math.min(1,(now-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;k<1?requestAnimationFrame(f):res()})(t0)})}
 $('#upBtn').onclick=async()=>{
   const s=stakeSum();if(!s||!tgt||upBusy)return;
-  const target=tgt,ch=chanceOf(s,target.p),roll=Math.random(),win=roll<ch;
+  const target=tgt,ch=curChance(s,target.p),roll=Math.random(),win=roll<ch;
   upBusy=true;$('#upBtn').disabled=true;sfx.ustart();
   const dial=$('.dial');dial.classList.remove('won','lost');
   const B=ch*360;let fin=roll*360,pre=null;
@@ -971,7 +973,7 @@ function renderMys(){
 document.querySelectorAll('.modes button').forEach(b=>b.onclick=()=>{if(upBusy)return;sfx.click();MODE=b.dataset.mode;
   document.querySelectorAll('.modes button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
   $('#classicBox').hidden=MODE!=='classic';$('#mysteryBox').hidden=MODE!=='mystery';
-  $('#upSub').textContent=MODE==='classic'?'Поставь один или несколько скинов и выбери, что хочешь получить. Шанс = 95% × ставка ÷ цена цели. Проиграл — ставка сгорает.':'Ставишь скины и получаешь случайный скин стоимостью от x0.3 до x5 от ставки. Например, ставка 10 → выпадет от 3 до 50.';
+  $('#upSub').textContent=MODE==='classic'?'Поставь один или несколько скинов и выбери, что хочешь получить. Шанс = ставка ÷ цена цели: x2 = 50%, x3 = 33%, x5 = 20%. Проиграл — ставка сгорает.':'Ставишь скины и получаешь случайный скин стоимостью от x0.3 до x5 от ставки. Например, ставка 10 → выпадет от 3 до 50.';
   renderUp()});
 function resetScanner(){$('#mysTo').className='slot scanner';$('#scanStage').innerHTML='<div class="qmark">?</div>';$('#scanTxt').textContent='ГОТОВ К СКАНУ';$('#scanVal').textContent=''}
 // Scan: flickers through possible skins, pauses, then reveals the (already decided) result
