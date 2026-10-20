@@ -676,7 +676,11 @@ let USER=null;try{USER=JSON.parse(localStorage.getItem('papadrop_user')||'null')
 const stateKey=()=>'papadrop_rub'+(USER?'_'+USER.sub:'');
 function loadState(){let d=null;try{d=JSON.parse(localStorage.getItem(stateKey())||'null')}catch(e){}return d?Object.assign(freshState(),d):null}
 let S=loadState()||freshState();
-const save=()=>{S.ts=Date.now();try{localStorage.setItem(stateKey(),JSON.stringify(S))}catch(e){}pushCloud()};
+// ts marks the last real change; re-renders that change nothing must not bump it
+const fp=()=>{const {ts,...r}=S;return JSON.stringify(r)};
+let lastFp=fp();
+const writeLocal=()=>{try{localStorage.setItem(stateKey(),JSON.stringify(S))}catch(e){}};
+const save=()=>{const f=fp();if(f===lastFp)return;lastFp=f;S.ts=Date.now();writeLocal();pushCloud()};
 let uid=Date.now();
 
 function itemHTML(it,extra=''){
@@ -974,6 +978,7 @@ function switchUser(u){
   const guest=S;USER=u;
   try{u?localStorage.setItem('papadrop_user',JSON.stringify(u)):localStorage.removeItem('papadrop_user')}catch(e){}
   S=loadState()||(u?guest:freshState()); // first sign-in keeps current progress
+  lastFp=fp();writeLocal();
   stakeIds=[];tgt=null;save();render();renderInv();renderUp();paintUser();
 }
 let gReady=false;
@@ -1001,17 +1006,22 @@ async function initFirebase(){
   await loadScript(v+'firebase-app-compat.js');await loadScript(v+'firebase-auth-compat.js');await loadScript(v+'firebase-firestore-compat.js');
   firebase.initializeApp(FIREBASE_CONFIG);
   FB={auth:firebase.auth(),db:firebase.firestore()};
-  FB.auth.onAuthStateChanged(async u=>{
+  let unsub=null;
+  const applyCloud=d=>{S=Object.assign(freshState(),d);lastFp=fp();writeLocal();stakeIds=[];tgt=null;render();renderInv();renderUp()};
+  FB.auth.onAuthStateChanged(u=>{
+    if(unsub){unsub();unsub=null}
     if(!u){if(USER)switchUser(null);return}
     if(!USER||USER.sub!==u.uid)switchUser({sub:u.uid,name:u.displayName||u.email,picture:u.photoURL,email:u.email});
     else{USER.email=u.email;paintUser()}
-    try{
-      const doc=await FB.db.collection('players').doc(u.uid).get();
+    let first=true;
+    // live: picks up admin changes even while the page is open
+    unsub=FB.db.collection('players').doc(u.uid).onSnapshot(doc=>{
+      if(doc.metadata.hasPendingWrites)return;
       const d=doc.exists?doc.data().state:null;
-      if(d&&(d.ts||0)>(S.ts||0)){S=Object.assign(freshState(),d);try{localStorage.setItem(stateKey(),JSON.stringify(S))}catch(e){}stakeIds=[];tgt=null;render();renderInv();renderUp();toast('Прогресс загружен из облака')}
-      else pushCloud();
-      setCloud('ok');
-    }catch(e){setCloud('err')}
+      if(d&&(d.ts||0)>(S.ts||0)){const had=S.bal;applyCloud(d);toast(first?'Прогресс загружен из облака':(d.bal!==had?'Баланс обновлён: '+rub(d.bal):'Прогресс обновлён'))}
+      else if(first)pushCloud();
+      first=false;setCloud('ok');
+    },()=>setCloud('err'));
   });
   return FB;
 }
