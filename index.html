@@ -947,7 +947,7 @@ CASES.forEach(c=>{
 // Sound (synthesized with Web Audio, soft)
 const SND={on:true,ctx:null,bus:null};
 try{SND.on=localStorage.getItem('pd_snd')!=='0'}catch(e){}
-function ac(){if(!SND.ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;const c=new C();const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600;const m=c.createGain();m.gain.value=.8;lp.connect(m);m.connect(c.destination);SND.ctx=c;SND.bus=lp}if(SND.ctx.state==='suspended')SND.ctx.resume();return SND.ctx}
+function ac(){if(!SND.ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;const c=new C();const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3200;const m=c.createGain();m.gain.value=3.2;const lim=c.createDynamicsCompressor();lim.threshold.value=-10;lim.knee.value=6;lim.ratio.value=12;lim.attack.value=.003;lim.release.value=.15;lp.connect(m);m.connect(lim);lim.connect(c.destination);SND.ctx=c;SND.bus=lp}if(SND.ctx.state==='suspended')SND.ctx.resume();return SND.ctx}
 function tone(f,d,type,vol,when,slide){if(!SND.on)return;const c=ac();if(!c)return;const t=c.currentTime+(when||0);const o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,f+slide),t+d);
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.03,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(SND.bus);o.start(t);o.stop(t+d+.03)}
 const RANK=['cons','ind','mil','res','cls','cov','gold'];
@@ -1259,10 +1259,10 @@ async function runUpgrade(fast){
   const target=tgt,ch=curChance(s,target.p),roll=Math.random(),win=roll<ch;
   upBusy=true;document.body.classList.add('busy');$('#upBtn').disabled=$('#upFast').disabled=true;sfx.ustart();
   const dial=$('.dial');dial.classList.remove('won','lost');
-  // win zone jumps to a random spot, then the needle runs and stops straight on the roll: normal 7 s, fast 1.2 s
+  // win zone jumps to a random spot, then the needle runs and stops straight on the roll: normal 10 s, fast 1.2 s
   setZone(Math.random()*360);await wait(REDUCED?0:(fast?150:550));
   upNeed=ch*100;upRolling=true;dial.classList.add('spinning');
-  await spinNeedle((upZ0+roll*360)%360,REDUCED?400:(fast?1200:7000),fast?3:9);
+  await spinNeedle((upZ0+roll*360)%360,REDUCED?400:(fast?1200:10000),fast?3:13);
   upRolling=false;dial.classList.remove('spinning');keepRoll=true;
   $('#rollNum').innerHTML=`ролл <b class="${win?'w':'l'}">${(roll*100).toFixed(2)}</b><br>нужно &lt; ${upNeed.toFixed(2)}`;
   const ids=new Set(stakeIds);S.inv=S.inv.filter(x=>!ids.has(x.id));S.ups++;
