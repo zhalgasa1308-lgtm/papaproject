@@ -574,7 +574,7 @@ body.busy .case .c3d-box{animation-play-state:paused}
     <div class="hero">
       <div class="banner">
         <div class="hero-txt">
-          <div class="eyebrow"><span class="live-dot"></span> <span id="heroOnline">2 418</span> игроков онлайн</div>
+          <div class="eyebrow"><span class="live-dot"></span> <span id="heroOnline">—</span> онлайн</div>
           <h1><span class="h-line">Открывай кейсы.</span><span class="h-glow">Лови нож.</span></h1>
           <p>Симулятор открытия кейсов CS2 с рыночными ценами в рублях. Честные шансы, апгрейды, Mystery и облачное сохранение.</p>
           <div class="hero-cta"><button class="btn btn-xl" id="heroOpen">Открыть бесплатный кейс</button><button class="btn ghost btn-xl" id="heroUp">Апгрейд</button></div>
@@ -591,7 +591,7 @@ body.busy .case .c3d-box{animation-play-state:paused}
         <div class="stat"><div class="k">Открыто кейсов</div><div class="v" id="sOpened">0</div></div>
         <div class="stat"><div class="k">Лучший дроп</div><div class="v" id="sBest">—</div></div>
         <div class="stat"><div class="k">Апгрейдов</div><div class="v" id="sUp">0</div></div>
-        <div class="stat"><div class="k">Онлайн</div><div class="v" id="sOn">2 418</div></div>
+        <div class="stat"><div class="k">Онлайн</div><div class="v" id="sOn">—</div></div>
       </div>
     </div>
     <div class="sec-head"><h2>Кейсы</h2><p class="sub">Шансы выпадения показаны внутри каждого кейса.</p></div>
@@ -1058,7 +1058,7 @@ function setQty(q){
   document.querySelectorAll('#qty button').forEach(b=>{b.setAttribute('aria-pressed',+b.dataset.q===q);b.disabled=!cur.price&&b.dataset.q!=='1'});
   $('#roulettes').innerHTML=Array.from({length:q},()=>`<div class="roul"><div class="marker"></div><div class="drum"><div class="strip"></div></div></div>`).join('');
   document.querySelectorAll('#roulettes .strip').forEach(s=>fillStrip(s,null));
-  $('#spinBtn').textContent=cur.price?`Открыть за ${rub(cur.price*q)}`:'Открыть бесплатно';
+  spinLabel();
   resetStage();
 }
 document.querySelectorAll('#qty button').forEach(b=>b.onclick=()=>!spinning&&setQty(+b.dataset.q));
@@ -1094,6 +1094,7 @@ async function animateStrip(strip,w,box,dur,side,snd){
 }
 async function spin(fast){
   if(spinning)return;
+  if(!USER){toast('Войди через Google, чтобы открывать кейсы');$('#loginBtn').click();return}
   if(!cur.price){const left=60-Math.floor((Date.now()-S.lastFree)/1000);if(left>0)return toast(`Бесплатный кейс через ${left} с`);S.lastFree=Date.now()}
   else if(S.bal<cur.price*qty)return toast('Не хватает денег. Открой бесплатный кейс или продай скины.');
   S.bal-=cur.price*qty;render();
@@ -1361,7 +1362,10 @@ $('#celebrate').onclick=closeCelebrate;
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCelebrate()});
 // Google account
 function decodeJwt(t){const p=t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');const bin=atob(p+'='.repeat((4-p.length%4)%4));return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))))}
+function spinLabel(){if(!cur)return;$('#spinBtn').textContent=!USER?'Войти и открыть':cur.price?`Открыть за ${rub(cur.price*qty)}`:'Открыть бесплатно'}
 function paintUser(){
+  const cn=document.querySelector('.coins');if(cn)cn.hidden=!USER;
+  spinLabel();
   const dm=document.querySelector('.logo .demo');if(dm)dm.hidden=!!USER;
   $('#loginBtn').hidden=!!USER;$('#userBox').hidden=!USER;
   $('#adminBtn').hidden=!(USER&&FB&&USER.email===ADMIN_EMAIL);
@@ -1410,6 +1414,7 @@ async function initFirebase(){
     if(!USER||USER.sub!==u.uid)switchUser({sub:u.uid,name:u.displayName||u.email,picture:u.photoURL,email:u.email});
     else{USER.email=u.email;paintUser()}
     let first=true;cloudReady=false;
+    beat();setTimeout(countOnline,800);
     // live: picks up admin changes even while the page is open
     unsub=FB.db.collection('players').doc(u.uid).onSnapshot(doc=>{
       if(doc.metadata.hasPendingWrites)return;
@@ -1427,8 +1432,13 @@ $('#loginBtn').onclick=async()=>{
   try{await initFirebase();await FB.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());toast('Вход выполнен')}
   catch(e){toast(e&&e.code==='auth/popup-closed-by-user'?'Вход отменён':'Не получилось войти, попробуй ещё раз')}
 };
+function beat(){if(FB&&FB.auth.currentUser&&!document.hidden)FB.db.collection('online').doc(FB.auth.currentUser.uid).set({ts:Date.now()}).catch(()=>{})}
+function countOnline(){if(!FB)return;FB.db.collection('online').where('ts','>',Date.now()-75000).get()
+  .then(q=>{const n=fmt(q.size);$('#sOn').textContent=n;$('#heroOnline').textContent=n}).catch(()=>{$('#sOn').textContent='—';$('#heroOnline').textContent='—'})}
+setInterval(()=>{beat();countOnline()},30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){beat();setTimeout(countOnline,800)}});
 $('#logoutBtn').onclick=async()=>{
-  if(FB&&FB.auth.currentUser){clearTimeout(cloudTimer);await FB.auth.signOut().catch(()=>{})}
+  if(FB&&FB.auth.currentUser){clearTimeout(cloudTimer);await FB.db.collection('online').doc(FB.auth.currentUser.uid).delete().catch(()=>{});await FB.auth.signOut().catch(()=>{})}
   else{try{window.google&&google.accounts&&google.accounts.id.disableAutoSelect()}catch(e){}switchUser(null)}
   toast('Ты вышел из аккаунта')
 };
@@ -1461,7 +1471,7 @@ $('#adminReload').onclick=loadAdmin;
 $('#adminClose').onclick=()=>$('#adminModal').hidden=true;
 $('#adminModal').onclick=e=>{if(e.target.id==='adminModal')$('#adminModal').hidden=true};
 paintUser();
-if(FIREBASE_CONFIG)initFirebase().catch(()=>{});
+if(FIREBASE_CONFIG)initFirebase().then(()=>setTimeout(countOnline,500)).catch(()=>{});
 // 3D tilt for skin cards (mouse only; roulette strips keep their own motion)
 let tiltEl=null;
 document.addEventListener('pointermove',e=>{
@@ -1487,13 +1497,13 @@ function pushFeed(it,mine){
   feed.prepend(d);while(feed.children.length>14)feed.lastChild.remove();
 }
 for(let i=0;i<12;i++){const c=CASES[1+Math.floor(Math.random()*(CASES.length-1))];pushFeed(roll(c),false)}
-setInterval(()=>{const c=CASES[1+Math.floor(Math.random()*(CASES.length-1))];pushFeed(roll(c),false);$('#sOn').textContent=fmt(2300+Math.random()*250)},2600);
+setInterval(()=>{const c=CASES[1+Math.floor(Math.random()*(CASES.length-1))];pushFeed(roll(c),false)},2600);
 
 
 // ===== WOW: hero crate, reveal, background sparks =====
 $('#heroCrate').innerHTML=crate3d('--r-gold',true);
 $('#heroUp').onclick=()=>tab('upgrade');
-setInterval(()=>{const v=$('#sOn');if(v)$('#heroOnline').textContent=v.textContent},2600);
+
 (function(){
   const els=[...document.querySelectorAll('.case,.stat,.sec-head')];
   if(!('IntersectionObserver' in window)||REDUCED)return;
