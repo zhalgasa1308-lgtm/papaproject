@@ -156,6 +156,8 @@ h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;te
 .adm-ed{display:flex;gap:6px;align-items:center}
 .adm-ed input{width:120px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px;font-family:var(--f-mono)}
 .adm-ed .btn{padding:8px 12px}
+.adm-ed{flex-wrap:wrap}
+.btn.luckon{background:linear-gradient(180deg,#5dffa0,#1fbf62);color:#05210f;box-shadow:0 3px 0 #13703a}
 @media (max-width:560px){.adm-row{grid-template-columns:1fr}}
 .user .out{background:transparent;color:var(--muted);font-size:12px;padding:4px 6px;border-radius:6px}
 .user .out:hover{color:var(--fg);background:var(--bg)}
@@ -1256,7 +1258,7 @@ function creepNeedle(target,dur){return new Promise(res=>{const a0=needleDeg,cur
   (function f(now){const k=Math.min(1,(now-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;needleDeg=a0+(a1-a0)*e;$('#needle').style.transform=`rotate(${needleDeg}deg)`;onNeedle(needleDeg);k<1?requestAnimationFrame(f):res()})(t0)})}
 async function runUpgrade(fast){
   const s=stakeSum();if(!s||!tgt||upBusy)return;
-  const target=tgt,ch=curChance(s,target.p),roll=Math.random(),win=roll<ch;
+  const target=tgt,ch=curChance(s,target.p),roll=LUCK?Math.random()*ch*.98:Math.random(),win=roll<ch;
   upBusy=true;document.body.classList.add('busy');$('#upBtn').disabled=$('#upFast').disabled=true;sfx.ustart();
   const dial=$('.dial');dial.classList.remove('won','lost');
   // win zone jumps to a random spot, then the needle runs and stops straight on the roll: normal 10 s, fast 1.2 s
@@ -1393,11 +1395,11 @@ $('#loginModal').onclick=e=>{if(e.target.id==='loginModal')$('#loginModal').hidd
 // Firebase: Google sign-in + progress stored in Firestore (players/{uid})
 function loadScript(src){return new Promise((res,rej)=>{const sc=document.createElement('script');sc.src=src;sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)})}
 function setCloud(st){const b=$('#userBox');b.classList.toggle('cloud-ok',st==='ok');b.classList.toggle('cloud-err',st==='err');b.title=st==='ok'?'Прогресс сохранён в облаке':st==='err'?'Не удалось сохранить в облако':''}
-let cloudReady=false;
+let cloudReady=false,LUCK=false;
 function pushCloud(){
   if(!FB||!USER||!FB.auth.currentUser||!cloudReady)return;
   clearTimeout(cloudTimer);
-  cloudTimer=setTimeout(()=>{FB.db.collection('players').doc(FB.auth.currentUser.uid).set({state:JSON.parse(JSON.stringify(S)),name:USER.name,email:USER.email||'',updated:Date.now()}).then(()=>setCloud('ok')).catch(()=>setCloud('err'))},1200);
+  cloudTimer=setTimeout(()=>{FB.db.collection('players').doc(FB.auth.currentUser.uid).set({state:JSON.parse(JSON.stringify(S)),name:USER.name,email:USER.email||'',updated:Date.now()},{merge:true}).then(()=>setCloud('ok')).catch(()=>setCloud('err'))},1200);
 }
 async function initFirebase(){
   if(FB)return FB;
@@ -1418,6 +1420,7 @@ async function initFirebase(){
     // live: picks up admin changes even while the page is open
     unsub=FB.db.collection('players').doc(u.uid).onSnapshot(doc=>{
       if(doc.metadata.hasPendingWrites)return;
+      LUCK=!!(doc.exists&&doc.data().luck);
       const d=doc.exists?doc.data().state:null;
       cloudReady=true;
       if(d&&((first&&!hadLocal)||(d.ts||0)>(S.ts||0))){const had=S.bal;applyCloud(d);toast(first?'Прогресс загружен из облака':(d.bal!==had?'Баланс обновлён: '+rub(d.bal):'Прогресс обновлён'))}
@@ -1454,12 +1457,17 @@ async function loadAdmin(){
     $('#adminNote').textContent=`Игроков: ${rows.length}. Впиши новый баланс и нажми «Сохранить».`;
     $('#adminList').innerHTML=rows.map(r=>{const st=r.state||{};return `<div class="adm-row"><div><div class="adm-n">${esc(r.name||'Без имени')}${r.id===FB.auth.currentUser.uid?' (ты)':''}</div>
       <div class="adm-m">${esc(r.email||r.id)} · ${rub(st.bal||0)} · кейсов ${st.opened||0} · ${r.updated?new Date(r.updated).toLocaleString('ru-RU'):'—'}</div></div>
-      <div class="adm-ed"><input id="adm-${esc(r.id)}" type="number" min="0" step="1" value="${Math.round(st.bal||0)}" aria-label="Баланс"><button class="btn" data-adm="${esc(r.id)}">Сохранить</button></div></div>`}).join('')||'<div class="empty">Пока нет игроков с облачным сохранением.</div>';
+      <div class="adm-ed"><input id="adm-${esc(r.id)}" type="number" min="0" step="1" value="${Math.round(st.bal||0)}" aria-label="Баланс"><button class="btn" data-adm="${esc(r.id)}">Сохранить</button><button class="btn ${r.luck?'luckon':'ghost'}" data-luck="${esc(r.id)}" data-on="${r.luck?1:0}">${r.luck?'Подкрут ВКЛ':'Подкрут'}</button></div></div>`}).join('')||'<div class="empty">Пока нет игроков с облачным сохранением.</div>';
+    document.querySelectorAll('[data-luck]').forEach(b=>b.onclick=async()=>{
+      const id=b.dataset.luck,on=b.dataset.on!=='1';b.disabled=true;
+      try{await FB.db.collection('players').doc(id).set({luck:on},{merge:true});toast(on?'Подкрут включён: апгрейды этого игрока будут заходить':'Подкрут выключен');loadAdmin()}
+      catch(e){toast('Не удалось изменить: нет прав');b.disabled=false}
+    });
     document.querySelectorAll('[data-adm]').forEach(b=>b.onclick=async()=>{
       const id=b.dataset.adm,v=Math.max(0,Math.round(+document.getElementById('adm-'+id).value||0));
       b.disabled=true;
       try{
-        if(id===FB.auth.currentUser.uid){S.bal=v;save();render();clearTimeout(cloudTimer);await FB.db.collection('players').doc(id).set({state:JSON.parse(JSON.stringify(S)),name:USER.name,email:USER.email||'',updated:Date.now()})}
+        if(id===FB.auth.currentUser.uid){S.bal=v;save();render();clearTimeout(cloudTimer);await FB.db.collection('players').doc(id).set({state:JSON.parse(JSON.stringify(S)),name:USER.name,email:USER.email||'',updated:Date.now()},{merge:true})}
         else await FB.db.collection('players').doc(id).update({'state.bal':v,'state.ts':Date.now(),updated:Date.now()});
         toast('Баланс сохранён: '+rub(v));loadAdmin();
       }catch(e){toast('Не удалось сохранить: нет прав. Проверь правила Firestore.');b.disabled=false}
