@@ -915,6 +915,12 @@ const CASES=[
    I('★ Спорт. перчатки','Сверхпроводник','gloves','gold',59772,'superc'),I('★ Перчатки спецназа','Кровавое кимоно','gloves','gold',91359,'kimono'),
    I('★ Спорт. перчатки','Ящик Пандоры','gloves','gold',150558,'pandora'),I('★ Спорт. перчатки','Живая изгородь','gloves','gold',159226,'hedge'),
    I('★ Перчатки спецназа','Полевой агент','gloves','gold',6436,'forest'),I('★ Перчатки спецназа','Мраморный градиент','gloves','gold',7939,'marble'),I('★ Спорт. перчатки','Мясник','gloves','gold',12543,'codered'),I('★ Перчатки спецназа','Погоня за облаком','gloves','gold',21990,'frost'),I('★ Спорт. перчатки','Оккультизм','gloves','gold',22896,'pandora')]},
+ {id:'million',name:'Миллионер',price:199990,tag:'Скины до 8 млн ₽',col:'--r-cov',items:[
+   I('★ Керамбит','Поверхностная закалка (FN)','karambit','gold',120353,'amphib'),I('Glock-18','Градиент (FN)','pistol','res',139213,'fade'),I('AK-47','Огненный змей (FN)','rifle','cov',168710,'serpent'),I('AWP','Принц (FN)','awp','cov',195997,'prince'),
+   I('★ Нож-бабочка','Кровавая паутина (FN)','butterfly','gold',309302,'codered'),I('★ Керамбит','Поверхностная закалка (StatTrak™)','karambit','gold',320007,'amphib'),I('AWP','Медуза (FN)','awp','cov',368597,'medusa'),I('★ Спорт. перчатки','Порок (FN)','gloves','gold',435842,'vice'),
+   I('★ Керамбит','Кровавая паутина (FN)','karambit','gold',459503,'codered'),I('M4A4','Вой (FN)','rifle','cov',523447,'howl'),I('★ Керамбит','Волны (Чёрная жемчужина)','karambit','gold',595943,'pearl'),I('★ Спорт. перчатки','Сверхпроводник (FN)','gloves','gold',676703,'superc'),
+   I('★ Перчатки спецназа','Кровавое кимоно (FN)','gloves','gold',739213,'kimono'),I('AWP','История о драконе (FN)','awp','cov',865070,'lore'),I('AWP','Гунгнир (FN)','awp','cov',899332,'gungnir'),I('AK-47','Дикий лотос (FN)','rifle','cov',1075339,'lotus'),
+   I('★ Спорт. перчатки','Ящик Пандоры (FN)','gloves','gold',1532151,'pandora'),I('★ Спорт. перчатки','Живая изгородь (FN)','gloves','gold',2449999,'hedge'),I('AWP','История о драконе (Сувенир, автограф)','awp','cov',5000000,'lore'),I('★ Керамбит','Поверхностная закалка (Blue Gem)','karambit','gold',8000000,'gungnir')]},
  {id:'legend',name:'Легенда',price:49990,tag:'Самые дорогие скины',col:'--r-gold',items:[
    I('M4A1-S','Добро пожаловать в джунгли','rifle','cov',34420,'jungle'),I('AK-47','Огненный змей','rifle','cov',38843,'serpent'),I('Desert Eagle','Пламя','pistol','res',48427,'blaze'),
    I('AWP','Пустынная гидра','awp','cov',67534,'hydra'),I('AK-47','Золотая арабеска','rifle','cov',70239,'arabesque'),I('M4A4','Посейдон','rifle','cov',78276,'poseidon'),
@@ -1154,7 +1160,12 @@ function renderInv(){
 $('#sellAll').onclick=()=>{S.bal+=S.inv.reduce((a,b)=>a+b.p,0);S.inv=[];render();renderInv();toast('Всё продано')};
 
 // Upgrade
-const EXTRA=[
+const EXTRA=[I('★ Керамбит','Поверхностная закалка (FN)','karambit','gold',120353,'amphib'),I('★ Керамбит','Поверхностная закалка (StatTrak™)','karambit','gold',320007,'amphib'),
+ I('★ Нож-бабочка','Кровавая паутина (FN)','butterfly','gold',309302,'codered'),I('★ Керамбит','Кровавая паутина (FN)','karambit','gold',459503,'codered'),
+ I('AWP','История о драконе (Сувенир)','awp','cov',881258,'lore'),I('AK-47','Дикий лотос (FN)','rifle','cov',1075339,'lotus'),I('AK-47','Дикий лотос (Сувенир)','rifle','cov',1102409,'lotus'),
+ I('★ Спорт. перчатки','Ящик Пандоры (FN)','gloves','gold',1532151,'pandora'),I('★ Спорт. перчатки','Живая изгородь (FN)','gloves','gold',2449999,'hedge'),
+ I('AWP','История о драконе (Сувенир, автограф)','awp','cov',5000000,'lore'),I('★ Керамбит','Поверхностная закалка (Blue Gem)','karambit','gold',8000000,'gungnir'),
+
  // cheap
  I('M4A4','Зубастик','rifle','mil',4),I('Glock-18','Коралловое цветение','pistol','mil',11),I('Glock-18','Расписная бирюза','pistol','mil',11),
  I('Desert Eagle','Бронзовая декорация','pistol','mil',9),I('Desert Eagle','Городской щебень','pistol','ind',11),I('USP-S','Бесшумный выстрел','pistol','mil',15),
