@@ -1326,7 +1326,8 @@ async function scanReveal(pool,win,s){
 $('#mysBtn').onclick=async()=>{
   const s=stakeSum(),pool=s?mysPool(s):null;if(!pool||upBusy)return;
   upBusy=true;$('#mysBtn').disabled=true;
-  const win=pickW(pool);
+  const plus=pool.filter(p=>p.item.p>s);
+  const win=LUCK&&plus.length?pickW(plus):pickW(pool); // boosted players always land above the stake
   await scanReveal(pool,win,s);
   const ids=new Set(stakeIds);S.inv=S.inv.filter(x=>!ids.has(x.id));S.ups++;
   const n={...win,id:++uid};S.inv.unshift(n);S.best=Math.max(S.best||0,n.p);pushFeed(n,true);
@@ -1411,7 +1412,7 @@ async function initFirebase(){
   const applyCloud=d=>{S=Object.assign(freshState(),d);lastFp=fp();writeLocal();stakeIds=[];tgt=null;render();renderInv();renderUp()};
   FB.auth.onAuthStateChanged(u=>{
     if(unsub){unsub();unsub=null}
-    if(!u){if(USER)switchUser(null);return}
+    if(!u){LUCK=false;if(USER)switchUser(null);return}
     let hadLocal=false;try{hadLocal=!!localStorage.getItem('papadrop_rub_'+u.uid)}catch(e){}
     if(!USER||USER.sub!==u.uid)switchUser({sub:u.uid,name:u.displayName||u.email,picture:u.photoURL,email:u.email});
     else{USER.email=u.email;paintUser()}
